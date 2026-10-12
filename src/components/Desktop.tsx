@@ -63,18 +63,25 @@ export const Desktop: React.FC = () => {
   const [isTurnOffOpen, setIsTurnOffOpen] = useState<boolean>(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
 
+  // دالة مساعدة لاستخراج معرّف يوتيوب النظيف حتى لو تم لصق الرابط كاملاً
+  const extractYoutubeId = (urlOrId: string) => {
+    const trimmed = urlOrId.trim();
+    const match = trimmed.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
+    return match ? match[1] : trimmed;
+  };
+
   // ==========================================
   // FIREBASE REALTIME SYNC (Works & Inquiries)
   // ==========================================
   const [works, setWorks] = useState<WorkItem[]>(INITIAL_WORKS);
   const [inquiries, setInquiries] = useState<ClientInquiry[]>(INITIAL_INQUIRIES);
 
-  // مزامنة الفيديوهات (Works) من Firestore
+  // مزامنة الفيديوهات (Works) من Firestore + رفع الأعمال الافتراضية إذا كانت فارغة
   useEffect(() => {
     const worksQuery = query(collection(db, 'works'));
     const unsubscribe = onSnapshot(
       worksQuery,
-      (snapshot) => {
+      async (snapshot) => {
         if (!snapshot.empty) {
           const loadedWorks: WorkItem[] = snapshot.docs.map((d) => ({
             id: d.id,
@@ -82,8 +89,14 @@ export const Desktop: React.FC = () => {
           }));
           setWorks(loadedWorks);
         } else {
-          // إذا كانت قاعدة البيانات فارغة، نبقي الأعمال الافتراضية
-          setWorks(INITIAL_WORKS);
+          // رفع الأعمال الافتراضية إلى قاعدة البيانات عند أول تشغيل
+          INITIAL_WORKS.forEach(async (initWork) => {
+            const { id, ...data } = initWork;
+            await setDoc(doc(db, 'works', id), {
+              ...data,
+              createdAt: serverTimestamp(),
+            });
+          });
         }
       },
       (error) => {
@@ -130,7 +143,7 @@ export const Desktop: React.FC = () => {
     return () => unsubscribe();
   }, []);
 
-  // Dimensions for initial large centered showcase window
+  // أبعاد نافذة المعرض
   const screenW = typeof window !== 'undefined' ? window.innerWidth : 1200;
   const screenH = typeof window !== 'undefined' ? window.innerHeight : 800;
   const initialShowcaseW = Math.min(880, Math.max(340, screenW - 60));
@@ -138,7 +151,6 @@ export const Desktop: React.FC = () => {
   const initialShowcaseX = Math.max(20, Math.floor((screenW - initialShowcaseW) / 2));
   const initialShowcaseY = Math.max(25, Math.floor((screenH - initialShowcaseH) / 2) - 15);
 
-  // Initial State: "Portfolio Showcase" is OPEN, LARGE and CENTERED in the middle!
   const [windows, setWindows] = useState<AppWindow[]>([
     {
       id: 'win-explorer',
@@ -156,7 +168,7 @@ export const Desktop: React.FC = () => {
   ]);
   const [activeWindowId, setActiveWindowId] = useState<string | null>('win-explorer');
 
-  // Startup chime
+  // نغمة البداية
   useEffect(() => {
     const handleFirstClick = () => {
       sound.playStartup();
@@ -178,7 +190,6 @@ export const Desktop: React.FC = () => {
     sound.playWindowOpen();
     setIsStartOpen(false);
 
-    // If opening vndfox with specific workId
     if (appId === 'vndfox') {
       const existingBrowser = windows.find((w) => w.appId === 'vndfox');
       if (existingBrowser) {
@@ -367,7 +378,7 @@ export const Desktop: React.FC = () => {
   };
 
   // ==========================================
-  // WORKS ACTIONS (FIREBASE)
+  // WORKS ACTIONS (FIREBASE WITH AUTO-CLEAN URL)
   // ==========================================
   const handleAddWork = async (work: WorkItem) => {
     try {
@@ -375,6 +386,7 @@ export const Desktop: React.FC = () => {
       const { id, ...workData } = work;
       await setDoc(doc(db, 'works', docId), {
         ...workData,
+        youtubeId: extractYoutubeId(work.youtubeId),
         createdAt: serverTimestamp(),
       });
     } catch (error) {
@@ -387,6 +399,7 @@ export const Desktop: React.FC = () => {
       const { id, ...workData } = updatedWork;
       await updateDoc(doc(db, 'works', id), {
         ...workData,
+        youtubeId: extractYoutubeId(updatedWork.youtubeId),
         updatedAt: serverTimestamp(),
       });
     } catch (error) {
@@ -402,13 +415,12 @@ export const Desktop: React.FC = () => {
     }
   };
 
-  // Open video in "vndfox" browser simulator
+  // فتح الفيديو داخل متصفح vndfox
   const handleOpenVideoInVndfox = (workId: string) => {
     const targetWork = works.find((w) => w.id === workId) || works[0];
     openApp('vndfox', { workId: targetWork.id, workTitle: targetWork.titleEn });
   };
 
-  // Context Menu
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
     sound.playClick();
@@ -417,7 +429,6 @@ export const Desktop: React.FC = () => {
 
   const lunaTheme = THEMES.xp_blue;
 
-  // Desktop Icons
   const desktopIcons = [
     {
       appId: 'explorer' as AppId,
@@ -477,7 +488,6 @@ export const Desktop: React.FC = () => {
         }`}
         dir={lang === 'ar' ? 'rtl' : 'ltr'}
       >
-        {/* Mobile Header with VndSmoll Avatar and Real Social SVGs */}
         <header className="p-3 bg-gradient-to-r from-[#0058e6] to-[#1546a8] border-b border-black/40 flex items-center justify-between shadow-md">
           <div className="flex items-center gap-2.5">
             <VndSmollAvatar size={34} />
@@ -491,7 +501,6 @@ export const Desktop: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Real WhatsApp SVG link */}
             <a
               href={ANES_PROFILE.whatsappUrl}
               target="_blank"
@@ -502,7 +511,6 @@ export const Desktop: React.FC = () => {
               <WhatsAppIcon size={16} />
             </a>
 
-            {/* Language Switcher on mobile */}
             <button
               onClick={() => {
                 sound.playClick();
@@ -513,7 +521,6 @@ export const Desktop: React.FC = () => {
               {lang.toUpperCase()}
             </button>
 
-            {/* Switch to XP Desktop */}
             <button
               onClick={() => setForceDesktopOnMobile(true)}
               className="px-2 py-1 bg-white/10 hover:bg-white/20 text-white text-[10px] rounded cursor-pointer"
@@ -523,7 +530,6 @@ export const Desktop: React.FC = () => {
           </div>
         </header>
 
-        {/* Mobile Body */}
         <div className="flex-1 overflow-y-auto p-3 bg-[#ece9d8] text-neutral-900">
           {mobileTab === 'works' && (
             <div className="space-y-3">
@@ -592,7 +598,6 @@ export const Desktop: React.FC = () => {
                 </div>
               </div>
 
-              {/* Big OC Character Art Illustration */}
               <div className="max-w-[240px] mx-auto py-2">
                 <VndBigIllustration />
               </div>
@@ -601,7 +606,6 @@ export const Desktop: React.FC = () => {
                 {ANES_PROFILE.summary}
               </p>
 
-              {/* Real Social Icon Buttons */}
               <div className="pt-2 border-t border-neutral-200">
                 <span className="text-xs font-bold text-neutral-800 block mb-2">Connect Directly:</span>
                 <div className="flex items-center gap-3">
@@ -653,7 +657,6 @@ export const Desktop: React.FC = () => {
           )}
         </div>
 
-        {/* Mobile Bottom Navigation */}
         <nav className="h-14 bg-gradient-to-b from-[#2a58b8] to-[#183e95] border-t border-black/40 flex items-center justify-around text-white">
           <button
             onClick={() => setMobileTab('works')}
@@ -718,7 +721,6 @@ export const Desktop: React.FC = () => {
         backgroundRepeat: 'no-repeat',
       }}
     >
-      {/* Top Welcome Bar with VndSmoll Avatar and Brand SVGs */}
       <header
         className={`absolute top-2 ${
           lang === 'ar' ? 'right-2 left-2' : 'left-2 right-2'
@@ -742,7 +744,6 @@ export const Desktop: React.FC = () => {
 
           <div className="h-5 w-[1px] bg-white/30 hidden sm:block" />
 
-          {/* Real Social Icon Links (X, YouTube, Instagram, WhatsApp) */}
           <div className="hidden md:flex items-center gap-3">
             <a
               href={ANES_PROFILE.youtubeUrl}
@@ -783,7 +784,6 @@ export const Desktop: React.FC = () => {
           </div>
         </div>
 
-        {/* Available for Hire button with WhatsApp Icon */}
         <div className="bg-[#2e7d32]/95 text-white px-3.5 py-1.5 rounded-lg border border-white/30 text-xs font-bold shadow-xl pointer-events-auto hidden sm:flex items-center gap-2.5">
           <span>● {lang === 'ar' ? 'متاح للعمل على مشاريع جديدة' : 'Available for New Projects'}</span>
           <a
@@ -798,7 +798,6 @@ export const Desktop: React.FC = () => {
         </div>
       </header>
 
-      {/* Desktop Icons Grid */}
       <main
         className={`absolute top-16 ${
           lang === 'ar' ? 'right-4' : 'left-4'
@@ -833,7 +832,6 @@ export const Desktop: React.FC = () => {
         ))}
       </main>
 
-      {/* Open Windows Rendering */}
       {windows.map((win) => {
         const isActive = activeWindowId === win.id;
         return (
@@ -934,7 +932,6 @@ export const Desktop: React.FC = () => {
         );
       })}
 
-      {/* Right-Click Context Menu */}
       {contextMenu && (
         <div
           onClick={(e) => e.stopPropagation()}
@@ -1002,7 +999,6 @@ export const Desktop: React.FC = () => {
         </div>
       )}
 
-      {/* Start Menu */}
       <StartMenu
         isOpen={isStartOpen}
         theme={lunaTheme}
@@ -1014,7 +1010,6 @@ export const Desktop: React.FC = () => {
         }}
       />
 
-      {/* Turn Off Computer Dialog */}
       <TurnOffDialog
         isOpen={isTurnOffOpen}
         onClose={() => setIsTurnOffOpen(false)}
@@ -1031,7 +1026,6 @@ export const Desktop: React.FC = () => {
         }}
       />
 
-      {/* Taskbar with Start, Tabs, Language Switcher, Sound & Clock */}
       <Taskbar
         windows={windows}
         activeWindowId={activeWindowId}
