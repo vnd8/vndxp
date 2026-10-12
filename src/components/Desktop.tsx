@@ -15,7 +15,7 @@ import { OutlookApp } from './apps/OutlookApp';
 import { AdminInboxApp } from './apps/AdminInboxApp';
 import { TimelineXPApp } from './apps/TimelineXPApp';
 import { VndSmollAvatar, VndBigIllustration } from './common/OCAssets';
-import { XIcon, InstagramIcon, WhatsAppIcon, YouTubeIcon } from './common/BrandIcons';
+import { XIcon, InstagramIcon, WhatsAppIcon, YouTubeIcon, PremiereIcon } from './common/BrandIcons';
 import { sound } from '../utils/audio';
 
 export const Desktop: React.FC = () => {
@@ -181,10 +181,10 @@ export const Desktop: React.FC = () => {
         height: 560,
       },
       snake: {
-        title: lang === 'ar' ? 'لعبة الدودة — إصدار بريمير 🎮' : 'Snake XP — Premiere Pro Edition 🎮',
-        icon: '🎮',
-        width: 360,
-        height: 480,
+        title: lang === 'ar' ? 'أدوبي بريمير برو (Adobe Premiere Pro) — Pr' : 'Adobe Premiere Pro CC (Web Edition) — Pr',
+        icon: 'Pr',
+        width: 440,
+        height: 620,
       },
       media_player: {
         title: 'Windows Media Player XP (WMP) 🎬',
@@ -342,8 +342,8 @@ export const Desktop: React.FC = () => {
     },
     {
       appId: 'snake' as AppId,
-      title: lang === 'ar' ? 'لعبة الدودة (بريمير)' : 'Snake XP (Premiere)',
-      icon: '🎮',
+      title: 'Adobe Premiere Pro',
+      icon: 'Pr',
     },
     {
       appId: 'media_player' as AppId,
@@ -599,8 +599,8 @@ export const Desktop: React.FC = () => {
               mobileTab === 'snake' ? 'font-bold text-[#ffe09e]' : 'text-neutral-200'
             }`}
           >
-            <span className="text-base">🎮</span>
-            <span>{lang === 'ar' ? 'الدودة' : 'Snake'}</span>
+            <PremiereIcon size={18} />
+            <span>Premiere</span>
           </button>
         </nav>
       </div>
@@ -729,7 +729,13 @@ export const Desktop: React.FC = () => {
             className="w-20 sm:w-24 p-1.5 rounded flex flex-col items-center gap-1 cursor-pointer pointer-events-auto hover:bg-blue-600/30 active:bg-blue-600/40 border border-transparent hover:border-white/40 transition-all text-center group"
           >
             <div className="w-12 h-12 rounded-lg bg-black/30 backdrop-blur-sm border border-white/30 flex items-center justify-center text-2xl shadow-md group-hover:scale-105 transition-transform">
-              {item.appId === 'notepad' ? <VndSmollAvatar size={30} /> : item.icon}
+              {item.appId === 'notepad' ? (
+                <VndSmollAvatar size={30} />
+              ) : item.appId === 'snake' ? (
+                <PremiereIcon size={32} />
+              ) : (
+                item.icon
+              )}
             </div>
             <span className="text-[11px] sm:text-xs font-bold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,1)] line-clamp-2 px-1 rounded group-hover:bg-[#0058e6]">
               {item.title}
@@ -760,7 +766,7 @@ export const Desktop: React.FC = () => {
                 : win.appId === 'vndfox'
                 ? 'vndfox Web Browser — https://vnd8.site'
                 : win.appId === 'snake'
-                ? 'Snake XP — Eat After Effects, DaVinci, Photoshop & Illustrator'
+                ? 'Adobe Premiere Pro — Timeline Snake Simulation'
                 : win.appId === 'media_player'
                 ? 'Windows Media Player XP — Direct Playback'
                 : win.appId === 'timeline_xp'
@@ -881,7 +887,8 @@ export const Desktop: React.FC = () => {
             }}
             className="w-full text-left px-2 py-1 hover:bg-[#316ac5] hover:text-white rounded-sm flex items-center gap-1.5 cursor-pointer"
           >
-            <span>🎮 Snake XP (Premiere)</span>
+            <PremiereIcon size={16} />
+            <span>Adobe Premiere Pro</span>
           </button>
           <button
             onClick={() => {

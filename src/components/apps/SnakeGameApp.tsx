@@ -144,17 +144,32 @@ export const SnakeGameApp: React.FC = () => {
   }, [gameOver, isPaused, food, score, highScore, spawnFood]);
 
   return (
-    <div className="flex flex-col h-full bg-[#ece9d8] select-none font-sans text-xs p-3 items-center justify-between">
+    <div className="flex flex-col h-full bg-[#ece9d8] select-none font-sans text-xs p-3 items-center justify-between gap-2 overflow-y-auto">
+      {/* Big Red Error / Warning Banner requested by user */}
+      <div className="w-full bg-[#d32f2f] text-white px-3 py-2.5 rounded border-2 border-[#b71c1c] shadow-md flex items-center gap-2.5">
+        <div className="w-8 h-8 rounded-full bg-white/20 border border-white/40 flex items-center justify-center text-lg shrink-0 shadow-inner">
+          🛑
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="font-black text-xs sm:text-[13px] tracking-wide text-white drop-shadow-sm leading-tight">
+            You cannot run Adobe Premiere on a browser, but you can play this game!
+          </div>
+          <div className="text-[10.5px] text-amber-200 font-medium mt-0.5 leading-tight">
+            System Notice: Full Premiere Pro requires high-end GPU & RAM. Enjoy the Pr Timeline Snake instead!
+          </div>
+        </div>
+      </div>
+
       {/* Game Info Bar */}
       <div className="w-full flex items-center justify-between bg-white px-3 py-1.5 rounded border border-[#7f9db9] shadow-xs">
         <div className="flex items-center gap-2">
-          <span className="font-bold text-[#300059] flex items-center gap-1">
-            <span className="w-4 h-4 bg-[#300059] text-[#ea77ff] rounded-[2px] font-black text-[9px] flex items-center justify-center">
+          <span className="font-bold text-[#300059] flex items-center gap-1.5">
+            <span className="w-4 h-4 bg-[#300059] border border-[#ea77ff] text-[#ea77ff] rounded-[2px] font-black text-[9px] flex items-center justify-center">
               Pr
             </span>
-            <span>Premiere Snake XP</span>
+            <span>Adobe Premiere Snake</span>
           </span>
-          <span className="text-[11px] text-neutral-500 font-mono">
+          <span className="text-[11px] text-neutral-500 font-mono hidden sm:inline">
             Eats: [Ae] [Da] [Ps] [Ai]
           </span>
         </div>

@@ -127,7 +127,13 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({
         >
           {/* Title and Icon on the Left */}
           <div className="flex items-center gap-2 overflow-hidden pointer-events-none">
-            <span className="text-base leading-none drop-shadow">{win.icon}</span>
+            {win.appId === 'snake' ? (
+              <span className="w-4 h-4 bg-[#300059] border border-[#ea77ff] text-[#ea77ff] rounded-[2px] font-black text-[9px] flex items-center justify-center leading-none shadow-xs">
+                Pr
+              </span>
+            ) : (
+              <span className="text-base leading-none drop-shadow">{win.icon}</span>
+            )}
             <span className="text-xs sm:text-sm font-bold truncate drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] tracking-wide">
               {win.title}
             </span>

@@ -2,7 +2,7 @@ import React from 'react';
 import { AppId, ThemeConfig } from '../types';
 import { ANES_PROFILE } from '../data/portfolioData';
 import { VndSmollAvatar } from './common/OCAssets';
-import { XIcon, InstagramIcon, WhatsAppIcon, YouTubeIcon } from './common/BrandIcons';
+import { XIcon, InstagramIcon, WhatsAppIcon, YouTubeIcon, PremiereIcon } from './common/BrandIcons';
 import { sound } from '../utils/audio';
 
 interface StartMenuProps {
@@ -101,13 +101,13 @@ export const StartMenu: React.FC<StartMenuProps> = ({
             }}
             className="p-1.5 rounded hover:bg-[#316ac5] hover:text-white flex items-center gap-2.5 text-left transition-colors cursor-pointer group"
           >
-            <span className="text-xl">🎮</span>
+            <PremiereIcon size={24} />
             <div className="min-w-0">
               <div className="font-bold text-xs group-hover:text-white">
-                {lang === 'ar' ? 'لعبة الدودة (بريمير)' : 'Snake XP (Premiere)'}
+                Adobe Premiere Pro
               </div>
               <div className="text-[10px] text-neutral-500 group-hover:text-white/80 truncate">
-                {lang === 'ar' ? 'التهام برامج المونتاج' : 'Eat Ae, Da, Ps & Ai'}
+                {lang === 'ar' ? 'تشغيل المونتاج / لعبة الدودة' : 'Video Editing Suite / Snake Game'}
               </div>
             </div>
           </button>

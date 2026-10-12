@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AppWindow, ThemeConfig } from '../types';
 import { sound } from '../utils/audio';
+import { PremiereIcon } from './common/BrandIcons';
 
 interface TaskbarProps {
   windows: AppWindow[];
@@ -100,10 +101,10 @@ export const Taskbar: React.FC<TaskbarProps> = ({
           </button>
           <button
             onClick={() => onQuickLaunch('snake')}
-            title="Snake XP (Premiere Edition)"
+            title="Adobe Premiere Pro"
             className="w-6 h-6 hover:bg-white/20 rounded flex items-center justify-center text-sm cursor-pointer"
           >
-            🎮
+            <PremiereIcon size={16} />
           </button>
           <button
             onClick={() => onQuickLaunch('outlook')}
@@ -131,7 +132,11 @@ export const Taskbar: React.FC<TaskbarProps> = ({
                     : 'bg-[#3b6ecc]/70 hover:bg-[#4b7edd] text-white/90 border border-white/30 xp-bevel-outset'
                 }`}
               >
-                <span className="text-xs">{win.icon}</span>
+                {win.appId === 'snake' ? (
+                  <PremiereIcon size={14} />
+                ) : (
+                  <span className="text-xs">{win.icon}</span>
+                )}
                 <span className="truncate flex-1">{win.title}</span>
               </button>
             );
