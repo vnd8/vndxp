@@ -1,0 +1,78 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'Tajawal', Tahoma, 'Segoe UI', system-ui, sans-serif;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+}
+
+/* Windows XP Classic Bevel Borders & Gradients */
+.xp-bevel-outset {
+  border-top: 1px solid #ffffff;
+  border-left: 1px solid #ffffff;
+  border-right: 1px solid #707070;
+  border-bottom: 1px solid #707070;
+  box-shadow: 1px 1px 0px 0px #404040;
+}
+
+.xp-bevel-inset {
+  border-top: 1px solid #707070;
+  border-left: 1px solid #707070;
+  border-right: 1px solid #ffffff;
+  border-bottom: 1px solid #ffffff;
+  box-shadow: inset 1px 1px 0px 0px #404040;
+}
+
+.xp-button-classic {
+  background: linear-gradient(180deg, #ffffff 0%, #ece9d8 15%, #ece9d8 85%, #d8d0c5 100%);
+  border: 1px solid #003c74;
+  box-shadow: inset 1px 1px 0px #fff, inset -1px -1px 0px #c2bdae;
+}
+
+.xp-button-classic:hover {
+  background: linear-gradient(180deg, #fff7ea 0%, #ffeed2 15%, #ffe09e 85%, #eec480 100%);
+  border-color: #d17a00;
+  box-shadow: 0 0 4px #ffe09e, inset 1px 1px 0px #fff;
+}
+
+.xp-button-classic:active {
+  background: linear-gradient(180deg, #d8d0c5 0%, #ece9d8 100%);
+  box-shadow: inset 1px 1px 2px #707070;
+}
+
+/* Custom retro scrollbars */
+::-webkit-scrollbar {
+  width: 14px;
+  height: 14px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1efe2;
+  border: 1px solid #d4d0c8;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c8c3b7;
+  border: 1px solid #ffffff;
+  border-right-color: #707070;
+  border-bottom-color: #707070;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #b5b0a3;
+}
+
+/* CRT Scanline Filter effect */
+.crt-overlay::before {
+  content: " ";
+  display: block;
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+  z-index: 99999;
+  background-size: 100% 3px, 6px 100%;
+  pointer-events: none;
+  opacity: 0.6;
+}

@@ -1,0 +1,6 @@
+{
+  "name": "Anes - Video Editor & Filmmaker XP",
+  "description": "Portfolio of Anes, professional video editor and filmmaker, presented in a creative and nostalgic Windows XP interactive desktop experience.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
