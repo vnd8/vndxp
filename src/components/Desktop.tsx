@@ -18,6 +18,20 @@ import { VndSmollAvatar, VndBigIllustration } from './common/OCAssets';
 import { XIcon, InstagramIcon, WhatsAppIcon, YouTubeIcon, PremiereIcon } from './common/BrandIcons';
 import { sound } from '../utils/audio';
 
+// استيراد إعدادات وعمليات Firestore
+import { db } from '../firebase';
+import {
+  collection,
+  onSnapshot,
+  doc,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+  serverTimestamp,
+  query,
+  orderBy,
+} from 'firebase/firestore';
+
 export const Desktop: React.FC = () => {
   // 1. The exact wallpaper requested by the user (saved permanently in public/wallpaper.png)
   const FIXED_WALLPAPER = '/wallpaper.png';
@@ -49,41 +63,72 @@ export const Desktop: React.FC = () => {
   const [isTurnOffOpen, setIsTurnOffOpen] = useState<boolean>(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
 
-  // Works state persisted in localStorage
-  const [works, setWorks] = useState<WorkItem[]>(() => {
-    const saved = localStorage.getItem('anes_xp_works');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch {
-        return INITIAL_WORKS;
+  // ==========================================
+  // FIREBASE REALTIME SYNC (Works & Inquiries)
+  // ==========================================
+  const [works, setWorks] = useState<WorkItem[]>(INITIAL_WORKS);
+  const [inquiries, setInquiries] = useState<ClientInquiry[]>(INITIAL_INQUIRIES);
+
+  // مزامنة الفيديوهات (Works) من Firestore
+  useEffect(() => {
+    const worksQuery = query(collection(db, 'works'));
+    const unsubscribe = onSnapshot(
+      worksQuery,
+      (snapshot) => {
+        if (!snapshot.empty) {
+          const loadedWorks: WorkItem[] = snapshot.docs.map((d) => ({
+            id: d.id,
+            ...(d.data() as Omit<WorkItem, 'id'>),
+          }));
+          setWorks(loadedWorks);
+        } else {
+          // إذا كانت قاعدة البيانات فارغة، نبقي الأعمال الافتراضية
+          setWorks(INITIAL_WORKS);
+        }
+      },
+      (error) => {
+        console.error('Error fetching works from Firebase:', error);
       }
-    }
-    return INITIAL_WORKS;
-  });
+    );
 
-  const saveWorks = (updated: WorkItem[]) => {
-    setWorks(updated);
-    localStorage.setItem('anes_xp_works', JSON.stringify(updated));
-  };
+    return () => unsubscribe();
+  }, []);
 
-  // Inquiries database persisted in localStorage
-  const [inquiries, setInquiries] = useState<ClientInquiry[]>(() => {
-    const saved = localStorage.getItem('anes_xp_inquiries');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch {
-        return INITIAL_INQUIRIES;
+  // مزامنة طلبات العملاء (Inquiries) من Firestore
+  useEffect(() => {
+    const inqQuery = query(collection(db, 'inquiries'), orderBy('createdAt', 'desc'));
+    const unsubscribe = onSnapshot(
+      inqQuery,
+      (snapshot) => {
+        if (!snapshot.empty) {
+          const loadedInquiries: ClientInquiry[] = snapshot.docs.map((d) => {
+            const data = d.data();
+            return {
+              id: d.id,
+              clientName: data.clientName || '',
+              contactInfo: data.contactInfo || '',
+              projectType: data.projectType || '',
+              duration: data.duration || '',
+              budget: data.budget || '',
+              details: data.details || '',
+              status: data.status || 'new',
+              adminNotes: data.adminNotes || '',
+              replyText: data.replyText || '',
+              createdAt: data.createdAt?.toDate
+                ? data.createdAt.toDate().toLocaleDateString()
+                : data.createdAt || new Date().toLocaleDateString(),
+            } as ClientInquiry;
+          });
+          setInquiries(loadedInquiries);
+        }
+      },
+      (error) => {
+        console.error('Error fetching inquiries from Firebase:', error);
       }
-    }
-    return INITIAL_INQUIRIES;
-  });
+    );
 
-  const saveInquiries = (updated: ClientInquiry[]) => {
-    setInquiries(updated);
-    localStorage.setItem('anes_xp_inquiries', JSON.stringify(updated));
-  };
+    return () => unsubscribe();
+  }, []);
 
   // Dimensions for initial large centered showcase window
   const screenW = typeof window !== 'undefined' ? window.innerWidth : 1200;
@@ -272,45 +317,89 @@ export const Desktop: React.FC = () => {
     );
   };
 
-  // Inquiry actions
-  const handleInquirySubmitted = (newInq: ClientInquiry) => {
-    const updated = [newInq, ...inquiries];
-    saveInquiries(updated);
+  // ==========================================
+  // INQUIRY ACTIONS (FIREBASE)
+  // ==========================================
+  const handleInquirySubmitted = async (newInq: ClientInquiry) => {
+    try {
+      const docId = newInq.id || `inq-${Date.now()}`;
+      await setDoc(doc(db, 'inquiries', docId), {
+        clientName: newInq.clientName,
+        contactInfo: newInq.contactInfo,
+        projectType: newInq.projectType,
+        duration: newInq.duration || '',
+        budget: newInq.budget || '',
+        details: newInq.details || '',
+        status: newInq.status || 'new',
+        adminNotes: newInq.adminNotes || '',
+        replyText: newInq.replyText || '',
+        createdAt: serverTimestamp(),
+      });
+    } catch (error) {
+      console.error('Error submitting inquiry to Firebase:', error);
+    }
   };
 
-  const handleUpdateStatus = (id: string, status: ClientInquiry['status'], notes?: string, reply?: string) => {
-    const updated = inquiries.map((i) =>
-      i.id === id
-        ? {
-            ...i,
-            status,
-            adminNotes: notes !== undefined ? notes : i.adminNotes,
-            replyText: reply !== undefined ? reply : i.replyText,
-          }
-        : i
-    );
-    saveInquiries(updated);
+  const handleUpdateStatus = async (
+    id: string,
+    status: ClientInquiry['status'],
+    notes?: string,
+    reply?: string
+  ) => {
+    try {
+      await updateDoc(doc(db, 'inquiries', id), {
+        status,
+        ...(notes !== undefined ? { adminNotes: notes } : {}),
+        ...(reply !== undefined ? { replyText: reply } : {}),
+        updatedAt: serverTimestamp(),
+      });
+    } catch (error) {
+      console.error('Error updating inquiry status in Firebase:', error);
+    }
   };
 
-  const handleDeleteInquiry = (id: string) => {
-    const updated = inquiries.filter((i) => i.id !== id);
-    saveInquiries(updated);
+  const handleDeleteInquiry = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, 'inquiries', id));
+    } catch (error) {
+      console.error('Error deleting inquiry from Firebase:', error);
+    }
   };
 
-  // Works actions
-  const handleAddWork = (work: WorkItem) => {
-    const updated = [work, ...works];
-    saveWorks(updated);
+  // ==========================================
+  // WORKS ACTIONS (FIREBASE)
+  // ==========================================
+  const handleAddWork = async (work: WorkItem) => {
+    try {
+      const docId = work.id || `w-${Date.now()}`;
+      const { id, ...workData } = work;
+      await setDoc(doc(db, 'works', docId), {
+        ...workData,
+        createdAt: serverTimestamp(),
+      });
+    } catch (error) {
+      console.error('Error adding work to Firebase:', error);
+    }
   };
 
-  const handleUpdateWork = (updatedWork: WorkItem) => {
-    const updated = works.map((w) => (w.id === updatedWork.id ? updatedWork : w));
-    saveWorks(updated);
+  const handleUpdateWork = async (updatedWork: WorkItem) => {
+    try {
+      const { id, ...workData } = updatedWork;
+      await updateDoc(doc(db, 'works', id), {
+        ...workData,
+        updatedAt: serverTimestamp(),
+      });
+    } catch (error) {
+      console.error('Error updating work in Firebase:', error);
+    }
   };
 
-  const handleDeleteWork = (id: string) => {
-    const updated = works.filter((w) => w.id !== id);
-    saveWorks(updated);
+  const handleDeleteWork = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, 'works', id));
+    } catch (error) {
+      console.error('Error deleting work from Firebase:', error);
+    }
   };
 
   // Open video in "vndfox" browser simulator
