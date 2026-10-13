@@ -17,6 +17,7 @@ interface TaskbarProps {
   onToggleCrt: () => void;
   lang: 'en' | 'ar';
   onToggleLang: () => void;
+  onSwitchToMobile?: () => void;
 }
 
 export const Taskbar: React.FC<TaskbarProps> = ({
@@ -33,6 +34,7 @@ export const Taskbar: React.FC<TaskbarProps> = ({
   onToggleCrt,
   lang,
   onToggleLang,
+  onSwitchToMobile,
 }) => {
   const [currentTime, setCurrentTime] = useState<string>('');
 
@@ -97,7 +99,12 @@ export const Taskbar: React.FC<TaskbarProps> = ({
             title="vndfox Browser"
             className="w-6 h-6 hover:bg-white/20 rounded flex items-center justify-center text-sm cursor-pointer"
           >
-            🦊
+            <img
+              src="/icon.png"
+              alt="vndfox"
+              className="w-4 h-4 object-contain"
+              draggable={false}
+            />
           </button>
           <button
             onClick={() => onQuickLaunch('snake')}
@@ -134,6 +141,22 @@ export const Taskbar: React.FC<TaskbarProps> = ({
               >
                 {win.appId === 'snake' ? (
                   <PremiereIcon size={14} />
+                ) : win.appId === 'vndfox' ? (
+                  <img
+                    src="/icon.png"
+                    alt="vndfox"
+                    className="w-3.5 h-3.5 object-contain shrink-0"
+                    draggable={false}
+                  />
+                ) : win.appId === 'notepad' ? (
+                  <div className="w-3.5 h-3.5 rounded-full p-[1px] bg-gradient-to-tr from-[#f39c12] to-[#e67e22] shrink-0">
+                    <img
+                      src="/vndsmoll.png"
+                      alt="About"
+                      className="w-full h-full object-cover rounded-full"
+                      draggable={false}
+                    />
+                  </div>
                 ) : (
                   <span className="text-xs">{win.icon}</span>
                 )}
@@ -146,6 +169,21 @@ export const Taskbar: React.FC<TaskbarProps> = ({
 
       {/* System Tray (Notification Area) */}
       <div className="h-full bg-black/30 border-l border-white/20 border-r border-black/40 px-2 flex items-center gap-2.5 text-white text-xs rounded-sm shadow-inner">
+        {/* Return to Mobile view button if on mobile */}
+        {onSwitchToMobile && (
+          <button
+            onClick={() => {
+              sound.playClick();
+              onSwitchToMobile();
+            }}
+            title={lang === 'ar' ? 'الرجوع إلى وضع الجوال' : 'Switch to Mobile View'}
+            className="px-2 py-0.5 rounded font-bold text-[11px] bg-amber-400 hover:bg-amber-300 text-black shadow-xs cursor-pointer flex items-center gap-1"
+          >
+            <span>📱</span>
+            <span className="hidden sm:inline">{lang === 'ar' ? 'الجوال' : 'Mobile'}</span>
+          </button>
+        )}
+
         {/* Windows Language Switcher (EN / AR) */}
         <button
           onClick={() => {

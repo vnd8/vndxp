@@ -184,9 +184,15 @@ export const ExplorerApp: React.FC<ExplorerAppProps> = ({ works, onOpenVideo, on
         {/* Files Grid / Details View */}
         <div className="flex-1 p-3.5 overflow-y-auto bg-white">
           {filteredWorks.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-neutral-400 gap-2">
-              <span className="text-4xl">🔍</span>
-              <p className="text-sm font-semibold">No video projects found matching this search</p>
+            <div className="h-full flex flex-col items-center justify-center text-neutral-500 gap-3 py-8 select-none">
+              <img
+                src="/xp_boot.gif"
+                alt="No video projects found"
+                className="w-56 max-w-full h-auto rounded-lg shadow-xl border-2 border-neutral-300 object-contain"
+              />
+              <p className="text-sm font-bold text-neutral-600">
+                No video projects found matching this search
+              </p>
             </div>
           ) : viewMode === 'tiles' ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">

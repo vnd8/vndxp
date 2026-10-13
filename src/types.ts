@@ -2,8 +2,6 @@ export type AppId =
   | 'explorer'
   | 'vndfox'
   | 'snake'
-  | 'media_player'
-  | 'timeline_xp'
   | 'outlook'
   | 'notepad'
   | 'admin_inbox'

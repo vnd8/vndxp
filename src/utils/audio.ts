@@ -170,6 +170,138 @@ class RetroSoundEngine {
       // Ignore
     }
   }
+
+  // Character Wink / Easter Egg Magic Twinkle
+  public playWink() {
+    if (!this.enabled) return;
+    try {
+      this.initCtx();
+      if (!this.ctx) return;
+      const t = this.ctx.currentTime;
+      const notes = [659.25, 880.0, 1174.66, 1567.98]; // E5, A5, D6, G6
+      notes.forEach((freq, idx) => {
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, t + idx * 0.06);
+
+        gain.gain.setValueAtTime(0.06, t + idx * 0.06);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + idx * 0.06 + 0.18);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(t + idx * 0.06);
+        osc.stop(t + idx * 0.06 + 0.2);
+      });
+    } catch {
+      // Ignore
+    }
+  }
+
+  // Razor Slice sound (Premiere Cut)
+  public playSlice() {
+    if (!this.enabled) return;
+    try {
+      this.initCtx();
+      if (!this.ctx) return;
+      const t = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(2400, t);
+      osc.frequency.exponentialRampToValueAtTime(300, t + 0.07);
+
+      gain.gain.setValueAtTime(0.07, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.07);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.08);
+    } catch {
+      // Ignore
+    }
+  }
+
+  // Timeline Beat Hit
+  public playBeat() {
+    if (!this.enabled) return;
+    try {
+      this.initCtx();
+      if (!this.ctx) return;
+      const t = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(180, t);
+      osc.frequency.exponentialRampToValueAtTime(45, t + 0.1);
+
+      gain.gain.setValueAtTime(0.12, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.11);
+    } catch {
+      // Ignore
+    }
+  }
+
+  // Combo Streak sound
+  public playCombo() {
+    if (!this.enabled) return;
+    try {
+      this.initCtx();
+      if (!this.ctx) return;
+      const t = this.ctx.currentTime;
+      const notes = [440, 554.37, 659.25, 880];
+      notes.forEach((freq, idx) => {
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(freq, t + idx * 0.05);
+        gain.gain.setValueAtTime(0.04, t + idx * 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + idx * 0.05 + 0.12);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(t + idx * 0.05);
+        osc.stop(t + idx * 0.05 + 0.13);
+      });
+    } catch {
+      // Ignore
+    }
+  }
+
+  // Project Export 100% complete
+  public playExportComplete() {
+    if (!this.enabled) return;
+    try {
+      this.initCtx();
+      if (!this.ctx) return;
+      const t = this.ctx.currentTime;
+      const chord = [392, 523.25, 659.25, 783.99, 1046.5];
+      chord.forEach((freq, idx) => {
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, t + idx * 0.08);
+        gain.gain.setValueAtTime(0.08, t + idx * 0.08);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + idx * 0.08 + 0.6);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(t + idx * 0.08);
+        osc.stop(t + idx * 0.08 + 0.65);
+      });
+    } catch {
+      // Ignore
+    }
+  }
 }
 
 export const sound = new RetroSoundEngine();

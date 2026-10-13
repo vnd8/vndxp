@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { AppId, AppWindow, ClientInquiry, WorkItem } from '../types';
 import { THEMES } from '../data/themes';
 import { ANES_PROFILE, INITIAL_INQUIRIES, INITIAL_WORKS } from '../data/portfolioData';
@@ -10,11 +10,9 @@ import { XPBootScreen } from './XPBootScreen';
 import { ExplorerApp } from './apps/ExplorerApp';
 import { VndfoxBrowserApp } from './apps/VndfoxBrowserApp';
 import { SnakeGameApp } from './apps/SnakeGameApp';
-import { MediaPlayApp } from './apps/MediaPlayApp';
 import { NotepadApp } from './apps/NotepadApp';
 import { OutlookApp } from './apps/OutlookApp';
 import { AdminInboxApp } from './apps/AdminInboxApp';
-import { TimelineXPApp } from './apps/TimelineXPApp';
 import { VndSmollAvatar, VndBigIllustration } from './common/OCAssets';
 import { XIcon, InstagramIcon, WhatsAppIcon, YouTubeIcon, PremiereIcon } from './common/BrandIcons';
 import { sound } from '../utils/audio';
@@ -172,6 +170,37 @@ export const Desktop: React.FC = () => {
   ]);
   const [activeWindowId, setActiveWindowId] = useState<string | null>('win-explorer');
 
+  // Easter egg peeking character state (peeks on active window, never in taskbar)
+  const [peekingWindowId, setPeekingWindowId] = useState<string | null>(null);
+  const peekerTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const scheduleNextPeeker = (delayMs?: number) => {
+    if (peekerTimerRef.current) clearTimeout(peekerTimerRef.current);
+    const delay = delayMs ?? Math.floor(Math.random() * 10000) + 12000; // 12-22s
+    peekerTimerRef.current = setTimeout(() => {
+      setWindows((currentWindows) => {
+        const visibleWins = currentWindows.filter((w) => !w.isMinimized);
+        if (visibleWins.length > 0) {
+          const target = visibleWins.find((w) => w.id === activeWindowId) || visibleWins[visibleWins.length - 1];
+          if (target) {
+            setPeekingWindowId(target.id);
+          }
+        } else {
+          scheduleNextPeeker(5000);
+        }
+        return currentWindows;
+      });
+    }, delay);
+  };
+
+  useEffect(() => {
+    // Initial peek 3.5s after desktop loads
+    scheduleNextPeeker(3500);
+    return () => {
+      if (peekerTimerRef.current) clearTimeout(peekerTimerRef.current);
+    };
+  }, []);
+
   // Startup chime
   useEffect(() => {
     const handleFirstClick = () => {
@@ -238,28 +267,16 @@ export const Desktop: React.FC = () => {
         height: isMobileScreen ? Math.max(420, screenH - 80) : 560,
       },
       vndfox: {
-        title: `vndfox — ${customData?.workTitle || 'vnd8.site'} 🦊`,
-        icon: '🦊',
-        width: isMobileScreen ? Math.max(320, screenW - 20) : 860,
-        height: isMobileScreen ? Math.max(420, screenH - 80) : 560,
+        title: `vndfox — ${customData?.workTitle || 'vnd8.site'}`,
+        icon: 'vndfox',
+        width: isMobileScreen ? Math.max(320, screenW - 20) : Math.min(1040, Math.max(780, screenW - 40)),
+        height: isMobileScreen ? Math.max(420, screenH - 80) : Math.min(680, Math.max(520, screenH - 60)),
       },
       snake: {
-        title: lang === 'ar' ? 'أدوبي بريمير برو (Adobe Premiere Pro) — Pr' : 'Adobe Premiere Pro CC (Web Edition) — Pr',
+        title: lang === 'ar' ? 'أدوبي بريمير برو — لا تحتاج بريمير! 🎬' : "Adobe Premiere Pro — You Don't Need Premiere! 🎬",
         icon: 'Pr',
-        width: isMobileScreen ? Math.max(320, screenW - 20) : 440,
-        height: isMobileScreen ? Math.max(420, screenH - 80) : 620,
-      },
-      media_player: {
-        title: 'Windows Media Player XP (WMP) 🎬',
-        icon: '🎬',
-        width: isMobileScreen ? Math.max(320, screenW - 20) : 820,
-        height: isMobileScreen ? Math.max(420, screenH - 80) : 540,
-      },
-      timeline_xp: {
-        title: lang === 'ar' ? 'محاكي المونتاج والريتنشن 🎞️' : 'Timeline Studio XP — Retention Simulator 🎞️',
-        icon: '🎞️',
-        width: isMobileScreen ? Math.max(320, screenW - 20) : 840,
-        height: isMobileScreen ? Math.max(420, screenH - 80) : 540,
+        width: isMobileScreen ? Math.max(320, screenW - 20) : 540,
+        height: isMobileScreen ? Math.max(420, screenH - 80) : 410,
       },
       outlook: {
         title: lang === 'ar' ? 'طلب مونتاج جديد — Outlook Express ✉️' : 'Order Video Editing — Outlook Express ✉️',
@@ -447,22 +464,19 @@ export const Desktop: React.FC = () => {
     {
       appId: 'vndfox' as AppId,
       title: 'vndfox Browser',
-      icon: '🦊',
+      icon: (
+        <img
+          src="/icon.png"
+          alt="vndfox"
+          className="w-8 h-8 object-contain drop-shadow"
+          draggable={false}
+        />
+      ),
     },
     {
       appId: 'snake' as AppId,
       title: 'Adobe Premiere Pro',
       icon: 'Pr',
-    },
-    {
-      appId: 'media_player' as AppId,
-      title: 'Media Player (WMP)',
-      icon: '🎬',
-    },
-    {
-      appId: 'timeline_xp' as AppId,
-      title: lang === 'ar' ? 'محاكي المونتاج' : 'Timeline Studio XP',
-      icon: '🎞️',
     },
     {
       appId: 'outlook' as AppId,
@@ -472,7 +486,19 @@ export const Desktop: React.FC = () => {
     {
       appId: 'notepad' as AppId,
       title: lang === 'ar' ? 'سيرة أنس @vnd8d' : 'About Anes (@vnd8d)',
-      icon: '📝',
+      icon: (
+        <div className="relative w-9 h-9 rounded-full p-[2px] bg-gradient-to-tr from-[#f39c12] via-[#f1c40f] to-[#e67e22] shadow-[0_2px_8px_rgba(0,0,0,0.5)]">
+          <img
+            src="/vndsmoll.png"
+            alt="About Anes"
+            className="w-full h-full object-cover rounded-full bg-[#300059]"
+            draggable={false}
+          />
+          <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-[#0058e6] text-white text-[8px] font-black flex items-center justify-center border border-white shadow-xs">
+            ★
+          </div>
+        </div>
+      ),
     },
     {
       appId: 'admin_inbox' as AppId,
@@ -490,7 +516,15 @@ export const Desktop: React.FC = () => {
   // BOOT SCREEN (XP LOADING ANIMATION)
   // ==========================================
   if (showBootScreen) {
-    return <XPBootScreen onComplete={() => setShowBootScreen(false)} lang={lang} />;
+    return (
+      <XPBootScreen
+        onComplete={() => setShowBootScreen(false)}
+        durationMs={3000}
+        lang={lang}
+        works={works}
+        wallpaper={FIXED_WALLPAPER}
+      />
+    );
   }
 
   // ==========================================
@@ -771,7 +805,11 @@ export const Desktop: React.FC = () => {
 
           {mobileTab === 'snake' && (
             <div className="h-[460px]">
-              <SnakeGameApp />
+              <SnakeGameApp
+                lang={lang}
+                onOpenInquiry={() => setMobileTab('order')}
+                onOpenWorks={() => setMobileTab('works')}
+              />
             </div>
           )}
         </div>
@@ -802,7 +840,14 @@ export const Desktop: React.FC = () => {
               mobileTab === 'about' ? 'font-bold text-[#ffe09e]' : 'text-neutral-200'
             }`}
           >
-            <span className="text-base">ℹ️</span>
+            <div className="relative w-5 h-5 rounded-full p-[1px] bg-gradient-to-tr from-[#f39c12] to-[#e67e22] shadow-xs shrink-0">
+              <img
+                src="/vndsmoll.png"
+                alt="About"
+                className="w-full h-full object-cover rounded-full"
+                draggable={false}
+              />
+            </div>
             <span>{lang === 'ar' ? 'عن أنس' : 'About'}</span>
           </button>
           <button
@@ -961,7 +1006,17 @@ export const Desktop: React.FC = () => {
           >
             <div className="w-12 h-12 rounded-lg bg-black/30 backdrop-blur-sm border border-white/30 flex items-center justify-center text-2xl shadow-md group-hover:scale-105 transition-transform">
               {item.appId === 'notepad' ? (
-                <VndSmollAvatar size={30} />
+                <div className="relative w-10 h-10 rounded-full p-[2px] bg-gradient-to-tr from-[#f39c12] via-[#f1c40f] to-[#e67e22] shadow-[0_2px_8px_rgba(0,0,0,0.5)]">
+                  <img
+                    src="/vndsmoll.png"
+                    alt="About Anes"
+                    className="w-full h-full object-cover rounded-full bg-[#300059]"
+                    draggable={false}
+                  />
+                  <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-[#0058e6] text-white text-[8px] font-black flex items-center justify-center border border-white shadow-xs">
+                    ★
+                  </div>
+                </div>
               ) : item.appId === 'snake' ? (
                 <PremiereIcon size={32} />
               ) : (
@@ -988,8 +1043,18 @@ export const Desktop: React.FC = () => {
             onMinimize={() => minimizeWindow(win.id)}
             onMaximize={() => maximizeWindow(win.id)}
             onMove={(x, y) => moveWindow(win.id, x, y)}
+            isPeeking={peekingWindowId === win.id}
+            onDismissPeeker={() => {
+              setPeekingWindowId(null);
+              scheduleNextPeeker();
+            }}
+            lang={lang}
             menuItems={
-              lang === 'ar' ? ['ملف', 'تحرير', 'عرض', 'مساعدة'] : ['File', 'Edit', 'View', 'Help']
+              win.appId === 'vndfox'
+                ? []
+                : lang === 'ar'
+                ? ['ملف', 'تحرير', 'عرض', 'مساعدة']
+                : ['File', 'Edit', 'View', 'Help']
             }
             statusText={
               win.appId === 'explorer'
@@ -997,11 +1062,7 @@ export const Desktop: React.FC = () => {
                 : win.appId === 'vndfox'
                 ? 'vndfox Web Browser — https://vnd8.site'
                 : win.appId === 'snake'
-                ? 'Adobe Premiere Pro — Timeline Snake Simulation'
-                : win.appId === 'media_player'
-                ? 'Windows Media Player XP — Direct Playback'
-                : win.appId === 'timeline_xp'
-                ? 'Timeline Studio Engine — Active'
+                ? (lang === 'ar' ? 'أدوبي بريمير برو — لا تحتاج بريمير! اطلب عمل مني' : "Adobe Premiere Pro — You don't need Premiere! Hire me")
                 : win.appId === 'outlook'
                 ? 'Outlook Express — Ready to Send'
                 : 'System Normal'
@@ -1024,18 +1085,12 @@ export const Desktop: React.FC = () => {
               />
             )}
 
-            {win.appId === 'snake' && <SnakeGameApp />}
-
-            {win.appId === 'media_player' && (
-              <MediaPlayApp
-                works={works}
-                initialWorkId={win.data?.workId}
+            {win.appId === 'snake' && (
+              <SnakeGameApp
+                lang={lang}
                 onOpenInquiry={() => openApp('outlook')}
+                onOpenWorks={() => openApp('explorer')}
               />
-            )}
-
-            {win.appId === 'timeline_xp' && (
-              <TimelineXPApp onOpenInquiry={() => openApp('outlook')} />
             )}
 
             {win.appId === 'outlook' && (
@@ -1109,7 +1164,13 @@ export const Desktop: React.FC = () => {
             }}
             className="w-full text-left px-2 py-1 hover:bg-[#316ac5] hover:text-white rounded-sm flex items-center gap-1.5 cursor-pointer"
           >
-            <span>🦊 vndfox Web Browser</span>
+            <img
+              src="/icon.png"
+              alt="vndfox"
+              className="w-3.5 h-3.5 object-contain"
+              draggable={false}
+            />
+            <span>vndfox Web Browser</span>
           </button>
           <button
             onClick={() => {

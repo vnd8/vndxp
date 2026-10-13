@@ -85,7 +85,12 @@ export const StartMenu: React.FC<StartMenuProps> = ({
             }}
             className="p-1.5 rounded hover:bg-[#316ac5] hover:text-white flex items-center gap-2.5 text-left transition-colors cursor-pointer group"
           >
-            <span className="text-xl">🦊</span>
+            <img
+              src="/icon.png"
+              alt="vndfox"
+              className="w-6 h-6 object-contain shrink-0 drop-shadow-xs"
+              draggable={false}
+            />
             <div className="min-w-0">
               <div className="font-bold text-xs group-hover:text-white">vndfox Web Browser</div>
               <div className="text-[10px] text-neutral-500 group-hover:text-white/80 truncate">
@@ -107,39 +112,7 @@ export const StartMenu: React.FC<StartMenuProps> = ({
                 Adobe Premiere Pro
               </div>
               <div className="text-[10px] text-neutral-500 group-hover:text-white/80 truncate">
-                {lang === 'ar' ? 'تشغيل المونتاج / لعبة الدودة' : 'Video Editing Suite / Snake Game'}
-              </div>
-            </div>
-          </button>
-
-          <button
-            onClick={() => {
-              onOpenApp('media_player');
-              onClose();
-            }}
-            className="p-1.5 rounded hover:bg-[#316ac5] hover:text-white flex items-center gap-2.5 text-left transition-colors cursor-pointer group"
-          >
-            <span className="text-xl">🎬</span>
-            <div className="min-w-0">
-              <div className="font-bold text-xs group-hover:text-white">Media Player (WMP XP)</div>
-              <div className="text-[10px] text-neutral-500 group-hover:text-white/80 truncate">
-                Color Grading Comparison
-              </div>
-            </div>
-          </button>
-
-          <button
-            onClick={() => {
-              onOpenApp('timeline_xp');
-              onClose();
-            }}
-            className="p-1.5 rounded hover:bg-[#316ac5] hover:text-white flex items-center gap-2.5 text-left transition-colors cursor-pointer group"
-          >
-            <span className="text-xl">🎞️</span>
-            <div className="min-w-0">
-              <div className="font-bold text-xs group-hover:text-white">Timeline Studio XP</div>
-              <div className="text-[10px] text-neutral-500 group-hover:text-white/80 truncate">
-                Retention Simulator
+                {lang === 'ar' ? 'وفر وقتك واطلب مونتاجك بدلاً من بريمير' : 'Save time and order your edit instead'}
               </div>
             </div>
           </button>
@@ -169,7 +142,17 @@ export const StartMenu: React.FC<StartMenuProps> = ({
             }}
             className="p-1.5 rounded hover:bg-[#316ac5] hover:text-white flex items-center gap-2.5 text-left transition-colors cursor-pointer group"
           >
-            <VndSmollAvatar size={20} />
+            <div className="relative w-6 h-6 rounded-full p-[1.5px] bg-gradient-to-tr from-[#f39c12] to-[#e67e22] shadow-xs shrink-0">
+              <img
+                src="/vndsmoll.png"
+                alt="About"
+                className="w-full h-full object-cover rounded-full"
+                draggable={false}
+              />
+              <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-[#0058e6] text-white text-[6px] font-black flex items-center justify-center border border-white">
+                ★
+              </div>
+            </div>
             <div className="min-w-0">
               <div className="font-bold text-xs group-hover:text-white">
                 {lang === 'ar' ? 'سيرة أنس @vnd8d' : 'About Anes (@vnd8d)'}

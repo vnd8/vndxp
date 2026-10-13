@@ -6,58 +6,12 @@ export const VndSmollAvatar: React.FC<{ className?: string; size?: number }> = (
   size = 40,
 }) => {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 100 100"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={`select-none ${className}`}
-    >
-      {/* Skull Base Outline */}
-      <path
-        d="M28 42 C24 24 40 12 58 14 C74 16 84 28 82 46 C81 58 74 66 66 72 C64 78 60 82 52 82 C44 82 41 78 38 72 C30 68 25 56 28 42 Z"
-        fill="#FFFFFF"
-        stroke="#8b263e"
-        strokeWidth="6"
-        strokeLinejoin="round"
-        strokeLinecap="round"
-      />
-
-      {/* Skull Jaw Teeth */}
-      <path
-        d="M45 74 L45 79 M51 74 L51 80 M57 74 L57 79"
-        stroke="#8b263e"
-        strokeWidth="4"
-        strokeLinecap="round"
-      />
-
-      {/* Right Eye (Winking / Smiling Crescent) */}
-      <path
-        d="M58 48 C58 38 72 38 72 48 C72 54 60 56 58 48 Z"
-        fill="#8b263e"
-      />
-
-      {/* Nose Cavity */}
-      <path
-        d="M51 58 C49 61 53 64 54 60 Z"
-        fill="#8b263e"
-      />
-
-      {/* Left Eye Flame (Warm Yellow / Orange Flame on Left Eye) */}
-      <path
-        d="M20 54 C16 46 22 36 29 38 C35 32 44 36 44 44 C48 48 44 58 38 60 C32 62 24 60 20 54 Z"
-        fill="#f7b731"
-        stroke="#8b263e"
-        strokeWidth="4"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M24 50 C21 44 26 38 31 40 C35 36 41 40 40 46 C37 52 30 54 24 50 Z"
-        fill="#fa8231"
-      />
-      <circle cx="32" cy="46" r="3" fill="#ffeaa7" />
-    </svg>
+    <img
+      src="/vndsmoll.png"
+      alt="VND"
+      style={{ width: size, height: size }}
+      className={`rounded-full object-cover select-none shrink-0 drop-shadow-sm ${className}`}
+    />
   );
 };
 
