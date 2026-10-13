@@ -16,7 +16,7 @@ export const XPBootScreen: React.FC<XPBootScreenProps> = ({
 
   // Fallback to Discord CDN if local file fails, or local first
   const localGif = '/xp_boot.gif';
-  const discordGif = 'https://cdn.discordapp.com/attachments/1449750291925958882/1559580861043572736/IMG_7244.gif?ex=6acf985c&is=6ace46dc&hm=2fe6bbe17c67a34f40934b1a9ef644177b1f7657ba3f7cdc8fc02a7bab36f253&';
+  const discordGif = 'https://cdn.discordapp.com/attachments/1449750291925958882/1559591242764124340/IMG_7244-ezgif.com-resize.gif?ex=6acfa208&is=6ace5088&hm=0a2778a98fa6a939508df419d1c8a73717d1d71059e250c61a2cc25e5a66194a&';
   const gifSrc = imgError ? discordGif : localGif;
 
   const handleFinish = () => {
