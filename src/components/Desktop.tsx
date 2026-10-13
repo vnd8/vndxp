@@ -6,6 +6,7 @@ import { WindowFrame } from './WindowFrame';
 import { Taskbar } from './Taskbar';
 import { StartMenu } from './StartMenu';
 import { TurnOffDialog } from './TurnOffDialog';
+import { XPBootScreen } from './XPBootScreen';
 import { ExplorerApp } from './apps/ExplorerApp';
 import { VndfoxBrowserApp } from './apps/VndfoxBrowserApp';
 import { SnakeGameApp } from './apps/SnakeGameApp';
@@ -33,6 +34,9 @@ import {
 } from 'firebase/firestore';
 
 export const Desktop: React.FC = () => {
+  // Boot screen state
+  const [showBootScreen, setShowBootScreen] = useState<boolean>(true);
+
   // 1. The exact wallpaper requested by the user (saved permanently in public/wallpaper.png)
   const FIXED_WALLPAPER = '/wallpaper.png';
 
@@ -89,7 +93,6 @@ export const Desktop: React.FC = () => {
           }));
           setWorks(loadedWorks);
         } else {
-          // رفع الأعمال الافتراضية إلى قاعدة البيانات عند أول تشغيل
           INITIAL_WORKS.forEach(async (initWork) => {
             const { id, ...data } = initWork;
             await setDoc(doc(db, 'works', id), {
@@ -143,14 +146,15 @@ export const Desktop: React.FC = () => {
     return () => unsubscribe();
   }, []);
 
-  // أبعاد نافذة المعرض
+  // Dimensions for initial large centered showcase window
   const screenW = typeof window !== 'undefined' ? window.innerWidth : 1200;
   const screenH = typeof window !== 'undefined' ? window.innerHeight : 800;
-  const initialShowcaseW = Math.min(880, Math.max(340, screenW - 60));
-  const initialShowcaseH = Math.min(580, Math.max(400, screenH - 120));
-  const initialShowcaseX = Math.max(20, Math.floor((screenW - initialShowcaseW) / 2));
-  const initialShowcaseY = Math.max(25, Math.floor((screenH - initialShowcaseH) / 2) - 15);
+  const initialShowcaseW = isMobileScreen ? Math.max(320, screenW - 20) : Math.min(880, Math.max(340, screenW - 60));
+  const initialShowcaseH = isMobileScreen ? Math.max(420, screenH - 80) : Math.min(580, Math.max(400, screenH - 120));
+  const initialShowcaseX = isMobileScreen ? 10 : Math.max(20, Math.floor((screenW - initialShowcaseW) / 2));
+  const initialShowcaseY = isMobileScreen ? 15 : Math.max(25, Math.floor((screenH - initialShowcaseH) / 2) - 15);
 
+  // Initial State: "Portfolio Showcase" is OPEN, LARGE and CENTERED in the middle!
   const [windows, setWindows] = useState<AppWindow[]>([
     {
       id: 'win-explorer',
@@ -168,15 +172,17 @@ export const Desktop: React.FC = () => {
   ]);
   const [activeWindowId, setActiveWindowId] = useState<string | null>('win-explorer');
 
-  // نغمة البداية
+  // Startup chime
   useEffect(() => {
     const handleFirstClick = () => {
-      sound.playStartup();
+      if (!showBootScreen) {
+        sound.playStartup();
+      }
       window.removeEventListener('click', handleFirstClick);
     };
     window.addEventListener('click', handleFirstClick);
     return () => window.removeEventListener('click', handleFirstClick);
-  }, []);
+  }, [showBootScreen]);
 
   const bringToFront = (id: string) => {
     setWindows((prev) => {
@@ -190,6 +196,7 @@ export const Desktop: React.FC = () => {
     sound.playWindowOpen();
     setIsStartOpen(false);
 
+    // If opening vndfox with specific workId
     if (appId === 'vndfox') {
       const existingBrowser = windows.find((w) => w.appId === 'vndfox');
       if (existingBrowser) {
@@ -227,50 +234,50 @@ export const Desktop: React.FC = () => {
       explorer: {
         title: lang === 'ar' ? 'معرض الأعمال — مقاطع أنس 📁' : 'Portfolio Showcase — Featured Works 📁',
         icon: '📁',
-        width: 860,
-        height: 560,
+        width: isMobileScreen ? Math.max(320, screenW - 20) : 860,
+        height: isMobileScreen ? Math.max(420, screenH - 80) : 560,
       },
       vndfox: {
         title: `vndfox — ${customData?.workTitle || 'vnd8.site'} 🦊`,
         icon: '🦊',
-        width: 860,
-        height: 560,
+        width: isMobileScreen ? Math.max(320, screenW - 20) : 860,
+        height: isMobileScreen ? Math.max(420, screenH - 80) : 560,
       },
       snake: {
         title: lang === 'ar' ? 'أدوبي بريمير برو (Adobe Premiere Pro) — Pr' : 'Adobe Premiere Pro CC (Web Edition) — Pr',
         icon: 'Pr',
-        width: 440,
-        height: 620,
+        width: isMobileScreen ? Math.max(320, screenW - 20) : 440,
+        height: isMobileScreen ? Math.max(420, screenH - 80) : 620,
       },
       media_player: {
         title: 'Windows Media Player XP (WMP) 🎬',
         icon: '🎬',
-        width: 820,
-        height: 540,
+        width: isMobileScreen ? Math.max(320, screenW - 20) : 820,
+        height: isMobileScreen ? Math.max(420, screenH - 80) : 540,
       },
       timeline_xp: {
         title: lang === 'ar' ? 'محاكي المونتاج والريتنشن 🎞️' : 'Timeline Studio XP — Retention Simulator 🎞️',
         icon: '🎞️',
-        width: 840,
-        height: 540,
+        width: isMobileScreen ? Math.max(320, screenW - 20) : 840,
+        height: isMobileScreen ? Math.max(420, screenH - 80) : 540,
       },
       outlook: {
         title: lang === 'ar' ? 'طلب مونتاج جديد — Outlook Express ✉️' : 'Order Video Editing — Outlook Express ✉️',
         icon: '✉️',
-        width: 700,
-        height: 530,
+        width: isMobileScreen ? Math.max(320, screenW - 20) : 700,
+        height: isMobileScreen ? Math.max(420, screenH - 80) : 530,
       },
       notepad: {
         title: lang === 'ar' ? 'سيرة_أنس.txt — المفكرة 📝' : 'About_Anes.txt — Executive Profile 📝',
         icon: '📝',
-        width: 720,
-        height: 520,
+        width: isMobileScreen ? Math.max(320, screenW - 20) : 720,
+        height: isMobileScreen ? Math.max(420, screenH - 80) : 520,
       },
       admin_inbox: {
         title: lang === 'ar' ? 'لوحة تحكم الإدارة 🔐' : 'Admin Control Panel 🔐',
         icon: '🔐',
-        width: 820,
-        height: 540,
+        width: isMobileScreen ? Math.max(320, screenW - 20) : 820,
+        height: isMobileScreen ? Math.max(420, screenH - 80) : 540,
       },
       recycle_bin: {
         title: lang === 'ar' ? 'سلة المحذوفات 🗑️' : 'Recycle Bin 🗑️',
@@ -289,8 +296,8 @@ export const Desktop: React.FC = () => {
       isMinimized: false,
       isMaximized: false,
       zIndex: Math.max(...windows.map((w) => w.zIndex), 0) + 1,
-      x: Math.max(20, Math.min(window.innerWidth - cfg.width - 20, 50 + windows.length * 25)),
-      y: Math.max(20, Math.min(window.innerHeight - cfg.height - 40, 40 + windows.length * 20)),
+      x: isMobileScreen ? 10 : Math.max(20, Math.min(window.innerWidth - cfg.width - 20, 50 + windows.length * 25)),
+      y: isMobileScreen ? 15 : Math.max(20, Math.min(window.innerHeight - cfg.height - 40, 40 + windows.length * 20)),
       width: cfg.width,
       height: cfg.height,
       data: customData,
@@ -415,12 +422,13 @@ export const Desktop: React.FC = () => {
     }
   };
 
-  // فتح الفيديو داخل متصفح vndfox
+  // Open video in "vndfox" browser simulator
   const handleOpenVideoInVndfox = (workId: string) => {
     const targetWork = works.find((w) => w.id === workId) || works[0];
     openApp('vndfox', { workId: targetWork.id, workTitle: targetWork.titleEn });
   };
 
+  // Context Menu
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
     sound.playClick();
@@ -429,6 +437,7 @@ export const Desktop: React.FC = () => {
 
   const lunaTheme = THEMES.xp_blue;
 
+  // Desktop Icons
   const desktopIcons = [
     {
       appId: 'explorer' as AppId,
@@ -478,6 +487,13 @@ export const Desktop: React.FC = () => {
   ];
 
   // ==========================================
+  // BOOT SCREEN (XP LOADING ANIMATION)
+  // ==========================================
+  if (showBootScreen) {
+    return <XPBootScreen onComplete={() => setShowBootScreen(false)} lang={lang} />;
+  }
+
+  // ==========================================
   // MOBILE STREAMLINED VIEW
   // ==========================================
   if (isMobileScreen && !forceDesktopOnMobile) {
@@ -488,6 +504,7 @@ export const Desktop: React.FC = () => {
         }`}
         dir={lang === 'ar' ? 'rtl' : 'ltr'}
       >
+        {/* Mobile Header with VndSmoll Avatar and Real Social SVGs */}
         <header className="p-3 bg-gradient-to-r from-[#0058e6] to-[#1546a8] border-b border-black/40 flex items-center justify-between shadow-md">
           <div className="flex items-center gap-2.5">
             <VndSmollAvatar size={34} />
@@ -501,6 +518,7 @@ export const Desktop: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Real WhatsApp SVG link */}
             <a
               href={ANES_PROFILE.whatsappUrl}
               target="_blank"
@@ -511,6 +529,7 @@ export const Desktop: React.FC = () => {
               <WhatsAppIcon size={16} />
             </a>
 
+            {/* Language Switcher on mobile */}
             <button
               onClick={() => {
                 sound.playClick();
@@ -521,6 +540,7 @@ export const Desktop: React.FC = () => {
               {lang.toUpperCase()}
             </button>
 
+            {/* Switch to XP Desktop */}
             <button
               onClick={() => setForceDesktopOnMobile(true)}
               className="px-2 py-1 bg-white/10 hover:bg-white/20 text-white text-[10px] rounded cursor-pointer"
@@ -530,6 +550,7 @@ export const Desktop: React.FC = () => {
           </div>
         </header>
 
+        {/* Mobile Body */}
         <div className="flex-1 overflow-y-auto p-3 bg-[#ece9d8] text-neutral-900">
           {mobileTab === 'works' && (
             <div className="space-y-3">
@@ -589,31 +610,129 @@ export const Desktop: React.FC = () => {
           )}
 
           {mobileTab === 'about' && (
-            <div className="bg-white p-4 rounded-lg border border-[#7f9db9] shadow-xs space-y-3">
-              <div className="flex items-center gap-3">
-                <VndSmollAvatar size={48} />
-                <div>
-                  <h2 className="font-extrabold text-base text-[#0058e6]">Anes (@vnd8d)</h2>
-                  <p className="text-xs text-neutral-500">{ANES_PROFILE.title}</p>
+            <div className="bg-white p-4 rounded-xl border border-[#7f9db9] shadow-sm space-y-4">
+              {/* Header with Avatar & Badge */}
+              <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
+                <div className="flex items-center gap-3">
+                  <VndSmollAvatar size={52} className="shadow-md" />
+                  <div>
+                    <div className="flex items-center gap-1.5">
+                      <h2 className="font-extrabold text-base text-[#0058e6]">Anes</h2>
+                      <span className="text-xs font-bold text-neutral-500">(@vnd8d)</span>
+                      <span className="text-[10px] bg-blue-100 text-[#0058e6] px-1.5 py-0.2 rounded-full font-bold">
+                        {lang === 'ar' ? '✓ موثق' : '✓ Verified'}
+                      </span>
+                    </div>
+                    <p className="text-xs text-neutral-600 font-medium">
+                      {lang === 'ar' ? ANES_PROFILE.titleAr : ANES_PROFILE.title}
+                    </p>
+                    <p className="text-[11px] text-neutral-400">
+                      {lang === 'ar' ? ANES_PROFILE.locationAr : ANES_PROFILE.location}
+                    </p>
+                  </div>
                 </div>
               </div>
 
-              <div className="max-w-[240px] mx-auto py-2">
-                <VndBigIllustration />
+              {/* Core Performance Metrics */}
+              <div>
+                <h3 className="text-xs font-bold text-neutral-700 uppercase tracking-wider mb-2">
+                  {lang === 'ar' ? 'الإحصائيات والأرقام' : 'Performance Metrics'}
+                </h3>
+                <div className="grid grid-cols-2 gap-2 text-center">
+                  <div className="bg-blue-50 border border-blue-200 p-2.5 rounded-lg">
+                    <div className="text-base font-black text-[#0058e6]">120M+</div>
+                    <div className="text-[10px] text-neutral-600 font-medium">
+                      {lang === 'ar' ? 'مشاهدة محققة' : 'Views Generated'}
+                    </div>
+                  </div>
+                  <div className="bg-amber-50 border border-amber-200 p-2.5 rounded-lg">
+                    <div className="text-base font-black text-amber-700">
+                      {lang === 'ar' ? '5+ سنوات' : '5+ Years'}
+                    </div>
+                    <div className="text-[10px] text-neutral-600 font-medium">
+                      {lang === 'ar' ? 'خبرة إنتاج' : 'Active Experience'}
+                    </div>
+                  </div>
+                  <div className="bg-emerald-50 border border-emerald-200 p-2.5 rounded-lg">
+                    <div className="text-base font-black text-emerald-700">280+</div>
+                    <div className="text-[10px] text-neutral-600 font-medium">
+                      {lang === 'ar' ? 'مشروع مكتمل' : 'Delivered Videos'}
+                    </div>
+                  </div>
+                  <div className="bg-purple-50 border border-purple-200 p-2.5 rounded-lg">
+                    <div className="text-base font-black text-purple-700">+45%</div>
+                    <div className="text-[10px] text-neutral-600 font-medium">
+                      {lang === 'ar' ? 'زيادة معدل المشاهدة' : 'Avg Retention Boost'}
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <p className="text-xs text-neutral-700 leading-relaxed">
-                {ANES_PROFILE.summary}
+              {/* Software Suite */}
+              <div>
+                <h3 className="text-xs font-bold text-neutral-700 uppercase tracking-wider mb-2">
+                  {lang === 'ar' ? 'حزمة البرامج الأساسية' : 'Software Suite'}
+                </h3>
+                <div className="grid grid-cols-2 gap-1.5 text-xs font-mono">
+                  <div className="flex items-center gap-1.5 bg-neutral-50 border border-neutral-200 p-1.5 rounded">
+                    <span className="font-bold text-[#9999ff] bg-[#00005b] px-1 rounded text-[10px]">Pr</span>
+                    <span className="text-[11px] text-neutral-800">Premiere Pro</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 bg-neutral-50 border border-neutral-200 p-1.5 rounded">
+                    <span className="font-bold text-[#d291ff] bg-[#00005b] px-1 rounded text-[10px]">Ae</span>
+                    <span className="text-[11px] text-neutral-800">After Effects</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 bg-neutral-50 border border-neutral-200 p-1.5 rounded">
+                    <span className="font-bold text-orange-400 bg-neutral-900 px-1 rounded text-[10px]">Da</span>
+                    <span className="text-[11px] text-neutral-800">DaVinci Resolve</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 bg-neutral-50 border border-neutral-200 p-1.5 rounded">
+                    <span className="font-bold text-[#31a8ff] bg-[#001e36] px-1 rounded text-[10px]">Ps</span>
+                    <span className="text-[11px] text-neutral-800">Photoshop</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Big OC Character Art Illustration */}
+              <div className="bg-gradient-to-b from-blue-50 to-neutral-50 p-2 rounded-xl border border-blue-100 flex flex-col items-center">
+                <span className="text-[10px] font-semibold text-blue-800 mb-1">
+                  {lang === 'ar' ? 'شخصية الأفاتار الرسمية' : 'Official Persona Art'}
+                </span>
+                <div className="max-w-[200px] py-1">
+                  <VndBigIllustration />
+                </div>
+              </div>
+
+              {/* Bio Summary */}
+              <p className="text-xs text-neutral-700 leading-relaxed bg-neutral-50 p-3 rounded-lg border border-neutral-200">
+                {lang === 'ar' ? ANES_PROFILE.summaryAr : ANES_PROFILE.summary}
               </p>
 
-              <div className="pt-2 border-t border-neutral-200">
-                <span className="text-xs font-bold text-neutral-800 block mb-2">Connect Directly:</span>
-                <div className="flex items-center gap-3">
+              {/* Full XP Mode Switch Button */}
+              <div className="pt-1">
+                <button
+                  onClick={() => {
+                    sound.playClick();
+                    setForceDesktopOnMobile(true);
+                  }}
+                  className="w-full py-2.5 px-3 bg-gradient-to-r from-[#0058e6] to-[#2563eb] hover:from-[#1b4fc2] hover:to-[#1d4ed8] text-white rounded-lg font-bold text-xs shadow-md flex items-center justify-center gap-2 border border-blue-400 active:scale-[0.98] transition-all cursor-pointer"
+                >
+                  <span>🖥️</span>
+                  <span>{lang === 'ar' ? 'تشغيل وضع ويندوز XP الكامل' : 'Switch to Full Windows XP Mode'}</span>
+                </button>
+              </div>
+
+              {/* Real Social Icon Buttons */}
+              <div className="pt-2 border-t border-neutral-200 flex items-center justify-between">
+                <span className="text-xs font-bold text-neutral-800">
+                  {lang === 'ar' ? 'تواصل مباشرة:' : 'Direct Contact:'}
+                </span>
+                <div className="flex items-center gap-2.5">
                   <a
                     href={ANES_PROFILE.whatsappUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-2 bg-[#25d366] text-white rounded-full shadow hover:scale-110 transition-transform"
+                    className="p-2 bg-[#25d366] text-white rounded-full shadow hover:scale-110 active:scale-95 transition-transform"
                     title="WhatsApp"
                   >
                     <WhatsAppIcon size={18} />
@@ -622,7 +741,7 @@ export const Desktop: React.FC = () => {
                     href={ANES_PROFILE.youtubeUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-2 bg-[#ff0000] text-white rounded-full shadow hover:scale-110 transition-transform"
+                    className="p-2 bg-[#ff0000] text-white rounded-full shadow hover:scale-110 active:scale-95 transition-transform"
                     title="YouTube"
                   >
                     <YouTubeIcon size={18} />
@@ -631,7 +750,7 @@ export const Desktop: React.FC = () => {
                     href={ANES_PROFILE.twitterUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-2 bg-black text-white rounded-full shadow hover:scale-110 transition-transform"
+                    className="p-2 bg-black text-white rounded-full shadow hover:scale-110 active:scale-95 transition-transform"
                     title="X / Twitter"
                   >
                     <XIcon size={18} />
@@ -640,7 +759,7 @@ export const Desktop: React.FC = () => {
                     href={ANES_PROFILE.instagramUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-2 bg-gradient-to-tr from-yellow-500 via-pink-500 to-purple-600 text-white rounded-full shadow hover:scale-110 transition-transform"
+                    className="p-2 bg-gradient-to-tr from-yellow-500 via-pink-500 to-purple-600 text-white rounded-full shadow hover:scale-110 active:scale-95 transition-transform"
                     title="Instagram"
                   >
                     <InstagramIcon size={18} />
@@ -657,6 +776,7 @@ export const Desktop: React.FC = () => {
           )}
         </div>
 
+        {/* Mobile Bottom Navigation */}
         <nav className="h-14 bg-gradient-to-b from-[#2a58b8] to-[#183e95] border-t border-black/40 flex items-center justify-around text-white">
           <button
             onClick={() => setMobileTab('works')}
@@ -721,6 +841,7 @@ export const Desktop: React.FC = () => {
         backgroundRepeat: 'no-repeat',
       }}
     >
+      {/* Top Welcome Bar with VndSmoll Avatar and Brand SVGs */}
       <header
         className={`absolute top-2 ${
           lang === 'ar' ? 'right-2 left-2' : 'left-2 right-2'
@@ -744,6 +865,7 @@ export const Desktop: React.FC = () => {
 
           <div className="h-5 w-[1px] bg-white/30 hidden sm:block" />
 
+          {/* Real Social Icon Links (X, YouTube, Instagram, WhatsApp) */}
           <div className="hidden md:flex items-center gap-3">
             <a
               href={ANES_PROFILE.youtubeUrl}
@@ -784,6 +906,7 @@ export const Desktop: React.FC = () => {
           </div>
         </div>
 
+        {/* Available for Hire button with WhatsApp Icon */}
         <div className="bg-[#2e7d32]/95 text-white px-3.5 py-1.5 rounded-lg border border-white/30 text-xs font-bold shadow-xl pointer-events-auto hidden sm:flex items-center gap-2.5">
           <span>● {lang === 'ar' ? 'متاح للعمل على مشاريع جديدة' : 'Available for New Projects'}</span>
           <a
@@ -798,6 +921,22 @@ export const Desktop: React.FC = () => {
         </div>
       </header>
 
+      {/* Return to Mobile view button when on mobile screen */}
+      {isMobileScreen && forceDesktopOnMobile && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            sound.playClick();
+            setForceDesktopOnMobile(false);
+          }}
+          className="fixed top-2 z-[9999] bg-gradient-to-r from-emerald-600 to-teal-700 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-2xl border border-white/40 flex items-center gap-1.5 active:scale-95 cursor-pointer ltr:right-3 rtl:left-3"
+        >
+          <span>📱</span>
+          <span>{lang === 'ar' ? 'الرجوع لعرض الجوال' : 'Switch to Mobile'}</span>
+        </button>
+      )}
+
+      {/* Desktop Icons Grid */}
       <main
         className={`absolute top-16 ${
           lang === 'ar' ? 'right-4' : 'left-4'
@@ -808,7 +947,11 @@ export const Desktop: React.FC = () => {
             key={item.appId}
             onClick={(e) => {
               e.stopPropagation();
-              sound.playClick();
+              if (isMobileScreen) {
+                openApp(item.appId);
+              } else {
+                sound.playClick();
+              }
             }}
             onDoubleClick={(e) => {
               e.stopPropagation();
@@ -832,6 +975,7 @@ export const Desktop: React.FC = () => {
         ))}
       </main>
 
+      {/* Open Windows Rendering */}
       {windows.map((win) => {
         const isActive = activeWindowId === win.id;
         return (
@@ -898,7 +1042,7 @@ export const Desktop: React.FC = () => {
               <OutlookApp onInquirySubmitted={handleInquirySubmitted} />
             )}
 
-            {win.appId === 'notepad' && <NotepadApp />}
+            {win.appId === 'notepad' && <NotepadApp lang={lang} />}
 
             {win.appId === 'admin_inbox' && (
               <AdminInboxApp
@@ -932,6 +1076,7 @@ export const Desktop: React.FC = () => {
         );
       })}
 
+      {/* Right-Click Context Menu */}
       {contextMenu && (
         <div
           onClick={(e) => e.stopPropagation()}
@@ -999,6 +1144,7 @@ export const Desktop: React.FC = () => {
         </div>
       )}
 
+      {/* Start Menu */}
       <StartMenu
         isOpen={isStartOpen}
         theme={lunaTheme}
@@ -1010,15 +1156,17 @@ export const Desktop: React.FC = () => {
         }}
       />
 
+      {/* Turn Off Computer Dialog */}
       <TurnOffDialog
         isOpen={isTurnOffOpen}
         onClose={() => setIsTurnOffOpen(false)}
         onRestart={() => {
           setIsTurnOffOpen(false);
           setWindows([]);
+          setShowBootScreen(true);
           setTimeout(() => {
             openApp('explorer');
-          }, 600);
+          }, 1200);
         }}
         onTurnOff={() => {
           setIsTurnOffOpen(false);
@@ -1026,6 +1174,7 @@ export const Desktop: React.FC = () => {
         }}
       />
 
+      {/* Taskbar with Start, Tabs, Language Switcher, Sound & Clock */}
       <Taskbar
         windows={windows}
         activeWindowId={activeWindowId}
@@ -1054,6 +1203,7 @@ export const Desktop: React.FC = () => {
         onToggleCrt={() => setEnableCrt(!enableCrt)}
         lang={lang}
         onToggleLang={() => setLang(lang === 'en' ? 'ar' : 'en')}
+        onSwitchToMobile={isMobileScreen ? () => setForceDesktopOnMobile(false) : undefined}
       />
     </div>
   );
