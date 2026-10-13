@@ -74,13 +74,15 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({
     return null;
   }
 
-  const style: React.CSSProperties = win.isMaximized
+  const isMobileScreen = typeof window !== 'undefined' && window.innerWidth < 768;
+
+  const style: React.CSSProperties = win.isMaximized || isMobileScreen
     ? {
         position: 'absolute',
         top: 0,
         left: 0,
         right: 0,
-        bottom: '36px',
+        bottom: '38px',
         zIndex: win.zIndex,
       }
     : {
@@ -98,7 +100,7 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({
     <div
       onClick={onFocus}
       style={style}
-      className={`flex flex-col rounded-t-lg select-none transition-shadow ${
+      className={`flex flex-col rounded-t-lg select-none transition-shadow max-w-full overflow-hidden ${
         isActive ? 'shadow-[0_12px_40px_rgba(0,0,0,0.6)]' : 'shadow-lg opacity-95'
       }`}
     >
