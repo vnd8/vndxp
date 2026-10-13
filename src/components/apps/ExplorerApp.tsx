@@ -75,9 +75,42 @@ export const ExplorerApp: React.FC<ExplorerAppProps> = ({ works, onOpenVideo, on
         <div className="flex items-center gap-2">
           <span className="text-neutral-600 font-semibold text-[11px]">Address:</span>
           <div className="flex-1 bg-white border border-[#7f9db9] px-2 py-0.5 rounded flex items-center justify-between text-xs font-mono">
-            <span>C:\Anes_Portfolio\Works\{selectedCategory.toUpperCase()}</span>
-            <span className="text-emerald-600 text-[10px] font-bold">📁 Verified Showcase</span>
+            <span className="truncate">C:\Anes_Portfolio\Works\{selectedCategory.toUpperCase()}</span>
+            <span className="text-emerald-600 text-[10px] font-bold hidden sm:inline">📁 Verified Showcase</span>
           </div>
+        </div>
+
+        {/* Mobile Category Navigation Pills */}
+        <div className="flex sm:hidden overflow-x-auto gap-1 py-1 no-scrollbar select-none">
+          <button
+            onClick={() => {
+              sound.playClick();
+              setSelectedCategory('all');
+            }}
+            className={`px-2 py-0.5 rounded text-[11px] whitespace-nowrap font-bold cursor-pointer ${
+              selectedCategory === 'all'
+                ? 'bg-[#0058e6] text-white'
+                : 'bg-white text-neutral-800 border border-neutral-300'
+            }`}
+          >
+            🌟 All ({works.length})
+          </button>
+          {uniqueCategories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => {
+                sound.playClick();
+                setSelectedCategory(cat);
+              }}
+              className={`px-2 py-0.5 rounded text-[11px] whitespace-nowrap font-bold capitalize cursor-pointer ${
+                selectedCategory.toLowerCase() === cat.toLowerCase()
+                  ? 'bg-[#0058e6] text-white'
+                  : 'bg-white text-neutral-800 border border-neutral-300'
+              }`}
+            >
+              📁 {cat}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -164,8 +197,13 @@ export const ExplorerApp: React.FC<ExplorerAppProps> = ({ works, onOpenVideo, on
                   <div
                     key={w.id}
                     onClick={() => {
-                      sound.playClick();
-                      setActiveWork(w);
+                      if (typeof window !== 'undefined' && window.innerWidth < 768) {
+                        sound.playWindowOpen();
+                        onOpenVideo(w.id);
+                      } else {
+                        sound.playClick();
+                        setActiveWork(w);
+                      }
                     }}
                     onDoubleClick={() => {
                       sound.playWindowOpen();
