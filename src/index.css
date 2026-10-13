@@ -83,91 +83,10 @@
     transform: translateX(-120%);
   }
   100% {
-    transform: translateX(500%);
+    transform: translateX(450%);
   }
-}
-
-.xp-loading-bar {
-  animation: xp-blocks-slide 1.6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 .animate-xp-progress {
-  animation: xp-blocks-slide 1.6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  animation: xp-blocks-slide 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
-
-/* Windows XP Authentic Glossy Progress Fill */
-.xp-progress-fill {
-  background: linear-gradient(180deg, #60a5fa 0%, #2563eb 45%, #1d4ed8 55%, #3b82f6 100%);
-  box-shadow: 0 0 10px rgba(59, 130, 246, 0.7);
-}
-
-.xp-progress-block {
-  background: linear-gradient(180deg, #93c5fd 0%, #3b82f6 40%, #1d4ed8 60%, #60a5fa 100%);
-  border-top: 1px solid rgba(255, 255, 255, 0.8);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.3);
-  box-shadow: 0 0 6px rgba(56, 189, 248, 0.7);
-}
-
-/* VND Character Peeker Animations */
-@keyframes vnd-rise {
-  0% {
-    transform: translateY(88px);
-    opacity: 0;
-  }
-  25% {
-    opacity: 0.6;
-  }
-  75% {
-    transform: translateY(-3px);
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-@keyframes vnd-duck {
-  0% {
-    transform: translateY(0);
-    opacity: 1;
-  }
-  15% {
-    transform: translateY(-2px);
-    opacity: 0.95;
-  }
-  100% {
-    transform: translateY(88px);
-    opacity: 0;
-  }
-}
-
-@keyframes vnd-react {
-  0% {
-    transform: translateY(0) scale(1);
-  }
-  35% {
-    transform: translateY(-3px) scale(1.05);
-  }
-  70% {
-    transform: translateY(1px) scale(1.02);
-  }
-  100% {
-    transform: translateY(0) scale(1.03);
-  }
-}
-
-.animate-vnd-rise {
-  animation: vnd-rise 500ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.animate-vnd-duck {
-  animation: vnd-duck 420ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-.animate-vnd-react {
-  animation: vnd-react 400ms ease-out forwards;
-}
-
-
-
