@@ -11,13 +11,10 @@ export const XPBootScreen: React.FC<XPBootScreenProps> = ({
   durationMs = 3400,
 }) => {
   const [fading, setFading] = useState<boolean>(false);
-  const [imgError, setImgError] = useState<boolean>(false);
   const [imgLoaded, setImgLoaded] = useState<boolean>(false);
 
-  // Fallback to Discord CDN if local file fails, or local first
-  const localGif = '/xp_boot.gif';
-  const discordGif = 'https://cdn.discordapp.com/attachments/1449750291925958882/1559591242764124340/IMG_7244-ezgif.com-resize.gif?ex=6acfa208&is=6ace5088&hm=0a2778a98fa6a939508df419d1c8a73717d1d71059e250c61a2cc25e5a66194a&';
-  const gifSrc = imgError ? discordGif : localGif;
+  // استخدام الملف المحلي في public مباشرة لسرعة فائقة وثابتة
+  const gifSrc = '/xp_boot.gif';
 
   const handleFinish = () => {
     if (fading) return;
@@ -43,7 +40,7 @@ export const XPBootScreen: React.FC<XPBootScreenProps> = ({
   return (
     <div
       onClick={handleFinish}
-      className={`fixed inset-0 z-[999999] bg-black text-white flex flex-col items-center justify-between select-none cursor-pointer transition-opacity duration-500 overflow-hidden ${
+      className={`fixed inset-0 z-[999999] bg-black text-white flex flex-col items-center justify-between select-none cursor-pointer transition-opacity duration-500 overflow-hidden font-sans ${
         fading ? 'opacity-0 pointer-events-none' : 'opacity-100'
       }`}
       style={{ touchAction: 'manipulation' }}
@@ -56,7 +53,7 @@ export const XPBootScreen: React.FC<XPBootScreenProps> = ({
             e.stopPropagation();
             handleFinish();
           }}
-          className="text-neutral-400 hover:text-white px-2 py-0.5 rounded border border-white/20 bg-white/5 active:scale-95 transition-all"
+          className="text-neutral-400 hover:text-white px-2 py-0.5 rounded border border-white/20 bg-white/5 active:scale-95 transition-all cursor-pointer"
         >
           Skip / تخطي [ESC]
         </button>
@@ -77,11 +74,10 @@ export const XPBootScreen: React.FC<XPBootScreenProps> = ({
             <img
               src={gifSrc}
               alt="Windows XP Loading Animation"
-              onError={() => {
-                if (!imgError) setImgError(true);
-              }}
               onLoad={() => setImgLoaded(true)}
-              className="max-w-full max-h-[55vh] sm:max-h-[60vh] w-auto h-auto object-contain block"
+              className={`max-w-full max-h-[55vh] sm:max-h-[60vh] w-auto h-auto object-contain block transition-opacity duration-300 ${
+                imgLoaded ? 'opacity-100' : 'opacity-80'
+              }`}
               loading="eager"
             />
           </div>
@@ -101,11 +97,11 @@ export const XPBootScreen: React.FC<XPBootScreenProps> = ({
         <div className="mt-6 sm:mt-8 flex flex-col items-center w-full max-w-xs sm:max-w-sm">
           {/* The Beveled Progress Bar Track */}
           <div className="w-56 sm:w-64 h-4 bg-[#0a0a0a] rounded-sm p-[2px] border border-[#333333] shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)] overflow-hidden relative">
-            {/* The 3 moving blue rounded blocks */}
-            <div className="h-full flex items-center gap-[3px] animate-xp-progress">
-              <div className="w-2.5 h-full rounded-[2px] bg-gradient-to-r from-[#2563eb] to-[#38bdf8] shadow-[0_0_8px_#38bdf8]" />
-              <div className="w-2.5 h-full rounded-[2px] bg-gradient-to-r from-[#2563eb] to-[#38bdf8] shadow-[0_0_8px_#38bdf8]" />
-              <div className="w-2.5 h-full rounded-[2px] bg-gradient-to-r from-[#2563eb] to-[#38bdf8] shadow-[0_0_8px_#38bdf8]" />
+            {/* The 3 moving blue rounded blocks (يستخدم xp-loading-bar من index.css) */}
+            <div className="xp-loading-bar absolute inset-y-[2px] w-12 flex gap-1">
+              <span className="h-full w-2.5 bg-gradient-to-r from-[#2563eb] to-[#38bdf8] rounded-[1px] shadow-[0_0_8px_#38bdf8]" />
+              <span className="h-full w-2.5 bg-gradient-to-r from-[#2563eb] to-[#38bdf8] rounded-[1px] shadow-[0_0_8px_#38bdf8]" />
+              <span className="h-full w-2.5 bg-gradient-to-r from-[#2563eb] to-[#38bdf8] rounded-[1px] shadow-[0_0_8px_#38bdf8]" />
             </div>
           </div>
           <p className="mt-2 text-[10px] sm:text-xs text-neutral-500 font-mono tracking-wider">
@@ -115,7 +111,7 @@ export const XPBootScreen: React.FC<XPBootScreenProps> = ({
       </div>
 
       {/* Bottom Footer Info */}
-      <div className="w-full pb-4 sm:pb-6 px-4 flex flex-col sm:flex-row items-center justify-between text-[11px] text-neutral-500 gap-1 border-t border-neutral-900/60 pt-2">
+      <div className="w-full pb-4 sm:pb-6 px-4 flex flex-col sm:flex-row items-center justify-between text-[11px] text-neutral-500 gap-1 border-t border-neutral-900/60 pt-2 font-mono">
         <span>© 2001-2026 Microsoft Corp. / Anes (@vnd8d) Video Production</span>
         <span className="text-[10px] text-neutral-400 animate-pulse">
           اضغط في أي مكان لتخطي شاشة التحميل (Click to start)
