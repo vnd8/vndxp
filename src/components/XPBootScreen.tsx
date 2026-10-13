@@ -1,0 +1,126 @@
+import React, { useState, useEffect } from 'react';
+import { sound } from '../utils/audio';
+
+interface XPBootScreenProps {
+  onComplete: () => void;
+  durationMs?: number;
+}
+
+export const XPBootScreen: React.FC<XPBootScreenProps> = ({
+  onComplete,
+  durationMs = 3400,
+}) => {
+  const [fading, setFading] = useState<boolean>(false);
+  const [imgError, setImgError] = useState<boolean>(false);
+  const [imgLoaded, setImgLoaded] = useState<boolean>(false);
+
+  // Fallback to Discord CDN if local file fails, or local first
+  const localGif = '/xp_boot.gif';
+  const discordGif = 'https://cdn.discordapp.com/attachments/1449750291925958882/1559580861043572736/IMG_7244.gif?ex=6acf985c&is=6ace46dc&hm=2fe6bbe17c67a34f40934b1a9ef644177b1f7657ba3f7cdc8fc02a7bab36f253&';
+  const gifSrc = imgError ? discordGif : localGif;
+
+  const handleFinish = () => {
+    if (fading) return;
+    setFading(true);
+    try {
+      sound.playStartup();
+    } catch {
+      // Audio autoplay policy
+    }
+    setTimeout(() => {
+      onComplete();
+    }, 450);
+  };
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      handleFinish();
+    }, durationMs);
+
+    return () => clearTimeout(timer);
+  }, [durationMs]);
+
+  return (
+    <div
+      onClick={handleFinish}
+      className={`fixed inset-0 z-[999999] bg-black text-white flex flex-col items-center justify-between select-none cursor-pointer transition-opacity duration-500 overflow-hidden ${
+        fading ? 'opacity-0 pointer-events-none' : 'opacity-100'
+      }`}
+      style={{ touchAction: 'manipulation' }}
+    >
+      {/* Top Ambient Bar */}
+      <div className="w-full pt-4 sm:pt-6 px-4 flex items-center justify-between opacity-70 text-[11px] font-mono">
+        <span className="text-[#3b82f6] tracking-wider font-semibold">ANES XP BOOTLOADER v5.1</span>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            handleFinish();
+          }}
+          className="text-neutral-400 hover:text-white px-2 py-0.5 rounded border border-white/20 bg-white/5 active:scale-95 transition-all"
+        >
+          Skip / تخطي [ESC]
+        </button>
+      </div>
+
+      {/* Centerpiece: User GIF inside authentic retro CRT / XP presentation */}
+      <div className="flex-1 flex flex-col items-center justify-center w-full max-w-4xl px-3 sm:px-6 my-auto">
+        <div className="relative w-full flex flex-col items-center">
+          {/* Artist Credits directly above the image */}
+          <div className="mb-2 sm:mb-2.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-xs text-center">
+            <span className="text-xs sm:text-sm font-medium tracking-wide text-neutral-300 font-mono">
+              art by : <span className="text-[#60a5fa] font-bold">@ectopluto</span> & <span className="text-[#f472b6] font-bold">@hamstarx3</span>
+            </span>
+          </div>
+
+          {/* Main GIF Container */}
+          <div className="relative max-w-full max-h-[55vh] sm:max-h-[60vh] rounded-md overflow-hidden shadow-[0_0_50px_rgba(30,58,138,0.35)] border border-neutral-800 bg-black flex items-center justify-center">
+            <img
+              src={gifSrc}
+              alt="Windows XP Loading Animation"
+              onError={() => {
+                if (!imgError) setImgError(true);
+              }}
+              onLoad={() => setImgLoaded(true)}
+              className="max-w-full max-h-[55vh] sm:max-h-[60vh] w-auto h-auto object-contain block"
+              loading="eager"
+            />
+          </div>
+
+          {/* Subtitle / Edition */}
+          <div className="mt-4 flex items-center gap-2 text-center">
+            <span className="text-sm sm:text-base font-bold tracking-widest text-neutral-200 uppercase drop-shadow">
+              Microsoft Windows <span className="text-[#f59e0b] font-black">XP</span>
+            </span>
+            <span className="text-xs text-neutral-400 font-medium">
+              Professional — @vnd8d Edition
+            </span>
+          </div>
+        </div>
+
+        {/* Authentic Windows XP Loading Bar */}
+        <div className="mt-6 sm:mt-8 flex flex-col items-center w-full max-w-xs sm:max-w-sm">
+          {/* The Beveled Progress Bar Track */}
+          <div className="w-56 sm:w-64 h-4 bg-[#0a0a0a] rounded-sm p-[2px] border border-[#333333] shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)] overflow-hidden relative">
+            {/* The 3 moving blue rounded blocks */}
+            <div className="h-full flex items-center gap-[3px] animate-xp-progress">
+              <div className="w-2.5 h-full rounded-[2px] bg-gradient-to-r from-[#2563eb] to-[#38bdf8] shadow-[0_0_8px_#38bdf8]" />
+              <div className="w-2.5 h-full rounded-[2px] bg-gradient-to-r from-[#2563eb] to-[#38bdf8] shadow-[0_0_8px_#38bdf8]" />
+              <div className="w-2.5 h-full rounded-[2px] bg-gradient-to-r from-[#2563eb] to-[#38bdf8] shadow-[0_0_8px_#38bdf8]" />
+            </div>
+          </div>
+          <p className="mt-2 text-[10px] sm:text-xs text-neutral-500 font-mono tracking-wider">
+            Loading portfolio assets & video engine...
+          </p>
+        </div>
+      </div>
+
+      {/* Bottom Footer Info */}
+      <div className="w-full pb-4 sm:pb-6 px-4 flex flex-col sm:flex-row items-center justify-between text-[11px] text-neutral-500 gap-1 border-t border-neutral-900/60 pt-2">
+        <span>© 2001-2026 Microsoft Corp. / Anes (@vnd8d) Video Production</span>
+        <span className="text-[10px] text-neutral-400 animate-pulse">
+          اضغط في أي مكان لتخطي شاشة التحميل (Click to start)
+        </span>
+      </div>
+    </div>
+  );
+};
