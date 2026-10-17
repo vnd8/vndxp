@@ -5,7 +5,21 @@ export type AppId =
   | 'outlook'
   | 'notepad'
   | 'admin_inbox'
-  | 'recycle_bin';
+  | 'recycle_bin'
+  | 'vnd_plugin';
+
+export interface VndPluginConfig {
+  downloadUrl: string;
+  mirrorUrl?: string;
+  version: string;
+  releaseDate: string;
+  fileSize: string;
+  compatibility: string;
+  software: string;
+  features: string[];
+  isVerifiedSafe: boolean;
+  sha256?: string;
+}
 
 export interface AppWindow {
   id: string;

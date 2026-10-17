@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AppWindow, ThemeConfig } from '../types';
 import { sound } from '../utils/audio';
-import { PremiereIcon } from './common/BrandIcons';
+import { PremiereIcon, PluginPuzzleIcon } from './common/BrandIcons';
 
 interface TaskbarProps {
   windows: AppWindow[];
@@ -114,6 +114,13 @@ export const Taskbar: React.FC<TaskbarProps> = ({
             <PremiereIcon size={16} />
           </button>
           <button
+            onClick={() => onQuickLaunch('vnd_plugin')}
+            title={lang === 'ar' ? 'تحميل إضافة VND (البريمير)' : 'Download VND Plugin'}
+            className="w-6 h-6 hover:bg-white/20 rounded flex items-center justify-center text-sm cursor-pointer"
+          >
+            <PluginPuzzleIcon size={16} />
+          </button>
+          <button
             onClick={() => onQuickLaunch('outlook')}
             title="Order Video Editing"
             className="w-6 h-6 hover:bg-white/20 rounded flex items-center justify-center text-sm cursor-pointer"
@@ -157,6 +164,8 @@ export const Taskbar: React.FC<TaskbarProps> = ({
                       draggable={false}
                     />
                   </div>
+                ) : win.appId === 'vnd_plugin' ? (
+                  <PluginPuzzleIcon size={14} />
                 ) : (
                   <span className="text-xs">{win.icon}</span>
                 )}

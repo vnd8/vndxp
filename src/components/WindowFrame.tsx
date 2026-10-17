@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { AppWindow } from '../types';
 import { sound } from '../utils/audio';
 import { VndPeeker } from './common/VndPeeker';
+import { PluginPuzzleIcon } from './common/BrandIcons';
 
 interface WindowFrameProps {
   window: AppWindow;
@@ -207,6 +208,8 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({
                   draggable={false}
                 />
               </div>
+            ) : win.appId === 'vnd_plugin' ? (
+              <PluginPuzzleIcon size={18} />
             ) : (
               <span className="text-base leading-none drop-shadow">{win.icon}</span>
             )}

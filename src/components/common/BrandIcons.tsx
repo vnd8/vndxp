@@ -56,3 +56,78 @@ export const PremiereIcon: React.FC<{ className?: string; size?: number }> = ({ 
     <span style={{ fontSize: `${Math.max(9, Math.round(size * 0.46))}px`, lineHeight: 1 }}>Pr</span>
   </div>
 );
+
+export const PluginPuzzleIcon: React.FC<{ className?: string; size?: number }> = ({ className = '', size = 44 }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 48 48"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={`drop-shadow-lg shrink-0 ${className}`}
+  >
+    <defs>
+      {/* Rich Premiere Magenta/Purple 3D Gradient */}
+      <linearGradient id="puzzleBodyGrad" x1="6" y1="4" x2="42" y2="44" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stopColor="#f472b6" />
+        <stop offset="25%" stopColor="#d946ef" />
+        <stop offset="60%" stopColor="#9333ea" />
+        <stop offset="100%" stopColor="#3b0764" />
+      </linearGradient>
+
+      {/* Top Glass Gloss Highlight */}
+      <linearGradient id="puzzleGloss" x1="24" y1="2" x2="24" y2="28" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stopColor="#ffffff" stopOpacity="0.75" />
+        <stop offset="45%" stopColor="#ffffff" stopOpacity="0.25" />
+        <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+      </linearGradient>
+
+      {/* 3D Bevel Rim Shadow */}
+      <linearGradient id="puzzleInnerShadow" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stopColor="#ffffff" stopOpacity="0.6" />
+        <stop offset="35%" stopColor="#ffffff" stopOpacity="0.1" />
+        <stop offset="70%" stopColor="#000000" stopOpacity="0.2" />
+        <stop offset="100%" stopColor="#000000" stopOpacity="0.65" />
+      </linearGradient>
+
+      {/* Filter for realistic depth */}
+      <filter id="puzzleDropShadow" x="-15%" y="-15%" width="130%" height="130%">
+        <feDropShadow dx="0" dy="2.5" stdDeviation="2.2" floodColor="#000000" floodOpacity="0.45" />
+      </filter>
+    </defs>
+
+    {/* Jigsaw Puzzle Piece 3D Drop Shadow & Main Body */}
+    <g filter="url(#puzzleDropShadow)">
+      {/* Authentic Jigsaw Puzzle Path: rounded outer corners, top tab, right tab, bottom socket, left socket */}
+      <path
+        d="M 14 12 H 20 C 19 8, 17 4, 21 2.5 C 23.5 1.5, 24.5 1.5, 27 2.5 C 31 4, 29 8, 28 12 H 34 Q 36 12 36 14 V 20 C 40 19, 44 17, 45.5 21 C 46.5 23.5, 46.5 24.5, 45.5 27 C 44 31, 40 29, 36 28 V 34 Q 36 36 34 36 H 28 C 29 32, 31 28, 27 26.5 C 24.5 25.5, 23.5 25.5, 21 26.5 C 17 28, 19 32, 20 36 H 14 Q 12 36 12 34 V 28 C 16 29, 20 31, 21.5 27 C 22.5 24.5, 22.5 23.5, 21.5 21 C 20 17, 16 19, 12 20 V 14 Q 12 12 14 12 Z"
+        fill="url(#puzzleBodyGrad)"
+        stroke="#fdf4ff"
+        strokeWidth="1.2"
+      />
+
+      {/* 3D Glass / Inner Bevel Overlay */}
+      <path
+        d="M 14 12 H 20 C 19 8, 17 4, 21 2.5 C 23.5 1.5, 24.5 1.5, 27 2.5 C 31 4, 29 8, 28 12 H 34 Q 36 12 36 14 V 20 C 40 19, 44 17, 45.5 21 C 46.5 23.5, 46.5 24.5, 45.5 27 C 44 31, 40 29, 36 28 V 34 Q 36 36 34 36 H 28 C 29 32, 31 28, 27 26.5 C 24.5 25.5, 23.5 25.5, 21 26.5 C 17 28, 19 32, 20 36 H 14 Q 12 36 12 34 V 28 C 16 29, 20 31, 21.5 27 C 22.5 24.5, 22.5 23.5, 21.5 21 C 20 17, 16 19, 12 20 V 14 Q 12 12 14 12 Z"
+        fill="url(#puzzleInnerShadow)"
+      />
+
+      {/* Top Gloss Arc */}
+      <path
+        d="M 14 13 H 20 C 19 9, 18 5, 21 3.5 C 23 2.5, 25 2.5, 27 3.5 C 30 5, 29 9, 28 13 H 34 V 20 C 33 21, 30 22, 24 22 C 18 22, 15 21, 14 20 Z"
+        fill="url(#puzzleGloss)"
+        opacity="0.85"
+      />
+    </g>
+
+    {/* Center Emblem: Stylized 4-point golden Spark + Mini "Pr" mark */}
+    <g transform="translate(19, 19.5)">
+      <rect x="0" y="0" width="10" height="9" rx="2" fill="#1e0234" stroke="#fbcfe8" strokeWidth="0.75" />
+      <text x="5" y="7" textAnchor="middle" fill="#f472b6" fontSize="6.5" fontWeight="900" fontFamily="sans-serif">Pr</text>
+    </g>
+
+    {/* Specular Glint Star on top knob */}
+    <circle cx="24" cy="4" r="1.2" fill="#ffffff" opacity="0.9" />
+  </svg>
+);
+

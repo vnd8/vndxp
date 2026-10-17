@@ -1,27 +1,31 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
-import { ClientInquiry, WorkItem } from '../../types';
+import { ClientInquiry, WorkItem, VndPluginConfig } from '../../types';
 import { sound } from '../../utils/audio';
 
 interface AdminInboxAppProps {
   inquiries: ClientInquiry[];
   works: WorkItem[];
+  pluginConfig?: VndPluginConfig;
   onUpdateInquiryStatus: (id: string, status: ClientInquiry['status'], notes?: string, reply?: string) => void;
   onDeleteInquiry: (id: string) => void;
   onAddWork: (work: WorkItem) => void;
   onUpdateWork: (work: WorkItem) => void;
   onDeleteWork: (id: string) => void;
+  onUpdatePluginConfig?: (config: VndPluginConfig) => void;
   lang?: 'en' | 'ar';
 }
 
 export const AdminInboxApp: React.FC<AdminInboxAppProps> = ({
   inquiries,
   works,
+  pluginConfig,
   onUpdateInquiryStatus,
   onDeleteInquiry,
   onAddWork,
   onUpdateWork,
   onDeleteWork,
+  onUpdatePluginConfig,
   lang = 'en',
 }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -29,8 +33,33 @@ export const AdminInboxApp: React.FC<AdminInboxAppProps> = ({
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string>('');
 
-  // 4 Tabs: Inquiries | Manage & Edit Works | Currency Calculator (DZD) | Discord (vnd8.site)
-  const [activeTab, setActiveTab] = useState<'requests' | 'works' | 'currency' | 'discord'>('requests');
+  // 5 Tabs: Inquiries | Manage & Edit Works | Currency Calculator (DZD) | Discord (vnd8.site) | VND Plugin Settings
+  const [activeTab, setActiveTab] = useState<'requests' | 'works' | 'currency' | 'discord' | 'plugin'>('requests');
+
+  // VND Plugin Management State
+  const [pluginDownloadUrl, setPluginDownloadUrl] = useState<string>(
+    pluginConfig?.downloadUrl || 'https://drive.google.com/file/d/1VndPluginPremierePro/view?usp=sharing'
+  );
+  const [pluginMirrorUrl, setPluginMirrorUrl] = useState<string>(
+    pluginConfig?.mirrorUrl || 'https://mega.nz/file/vnd-plugin-premiere-pro-latest'
+  );
+  const [pluginVersion, setPluginVersion] = useState<string>(
+    pluginConfig?.version || 'v1.4.2'
+  );
+  const [pluginReleaseDate, setPluginReleaseDate] = useState<string>(
+    pluginConfig?.releaseDate || 'October 2026'
+  );
+  const [pluginFileSize, setPluginFileSize] = useState<string>(
+    pluginConfig?.fileSize || '42.8 MB'
+  );
+  const [pluginCompatibility, setPluginCompatibility] = useState<string>(
+    pluginConfig?.compatibility || 'Adobe Premiere Pro CC 2021 – 2025 (Windows 10 / 11 64-bit)'
+  );
+  const [pluginFeaturesText, setPluginFeaturesText] = useState<string>(
+    pluginConfig?.features.join('\n') || 
+    '1-Click Smooth Kinetic Zoom & Dynamic Whip Pan Presets\nAudio Beat Auto-Sync & Automatic Marker Generator\nKinetic Typography & Fast Subtitle Motion Suite\nVND Signature LUTs & Film Emulation Color Grading Engine\nSmart Social Aspect Ratio Exporter (9:16, 1:1, 16:9)'
+  );
+  const [pluginSaveMsg, setPluginSaveMsg] = useState<string>('');
 
   // Inquiries state
   const [selectedInquiryId, setSelectedInquiryId] = useState<string | null>(null);
@@ -192,6 +221,44 @@ export const AdminInboxApp: React.FC<AdminInboxAppProps> = ({
 
   const existingCategories = Array.from(new Set(works.map((w) => w.category)));
 
+  const handleSavePlugin = (e: React.FormEvent) => {
+    e.preventDefault();
+    sound.playClick();
+    const updatedFeatures = pluginFeaturesText
+      .split('\n')
+      .map((f) => f.trim())
+      .filter(Boolean);
+
+    const newConfig: VndPluginConfig = {
+      downloadUrl: pluginDownloadUrl.trim(),
+      mirrorUrl: pluginMirrorUrl.trim() || undefined,
+      version: pluginVersion.trim() || 'v1.4.2',
+      releaseDate: pluginReleaseDate.trim() || 'October 2026',
+      fileSize: pluginFileSize.trim() || '42.8 MB',
+      compatibility: pluginCompatibility.trim() || 'Adobe Premiere Pro CC 2021 – 2025 (Windows 10 / 11 64-bit)',
+      software: 'Adobe Premiere Pro',
+      features: updatedFeatures.length > 0 ? updatedFeatures : [
+        '1-Click Smooth Kinetic Zoom & Dynamic Whip Pan Presets',
+        'Audio Beat Auto-Sync & Automatic Marker Generator',
+        'Kinetic Typography & Fast Subtitle Motion Suite',
+      ],
+      isVerifiedSafe: true,
+      sha256: pluginConfig?.sha256 || '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08',
+    };
+
+    localStorage.setItem('anes_vnd_plugin_config', JSON.stringify(newConfig));
+    if (onUpdatePluginConfig) {
+      onUpdatePluginConfig(newConfig);
+    }
+
+    setPluginSaveMsg(
+      lang === 'ar'
+        ? 'تم حفظ رابط وإعدادات إضافة البريمير بنجاح! تم تحديث شاشة التنزيل فوراً.'
+        : 'VND Plugin link and release settings updated successfully! Live on download screen.'
+    );
+    setTimeout(() => setPluginSaveMsg(''), 4000);
+  };
+
   if (!isAuthenticated) {
     return (
       <div className="flex flex-col items-center justify-center h-full p-6 bg-[#ece9d8] text-neutral-800 select-none font-sans">
@@ -317,6 +384,20 @@ export const AdminInboxApp: React.FC<AdminInboxAppProps> = ({
             }`}
           >
             🛠️ {lang === 'ar' ? 'توثيق الديسكورد (vnd8.site)' : 'Discord (vnd8.site)'}
+          </button>
+
+          <button
+            onClick={() => {
+              sound.playClick();
+              setActiveTab('plugin');
+            }}
+            className={`px-3 py-1 rounded text-xs font-bold cursor-pointer transition ${
+              activeTab === 'plugin'
+                ? 'bg-[#ea77ff] text-[#1b0033] font-black shadow-sm'
+                : 'bg-white border border-purple-300 hover:bg-purple-50 text-purple-900 font-bold'
+            }`}
+          >
+            🔌 {lang === 'ar' ? 'إضافة VND (البريمير)' : 'VND Plugin Settings'}
           </button>
         </div>
 
@@ -809,6 +890,137 @@ export const AdminInboxApp: React.FC<AdminInboxAppProps> = ({
             >
               Save Verification for vnd8.site 💾
             </button>
+          </form>
+        </div>
+      )}
+
+      {/* Tab 5: VND Plugin (Premiere Pro) Download & Release Manager */}
+      {activeTab === 'plugin' && (
+        <div className="flex-1 p-4 md:p-6 overflow-y-auto space-y-5 max-w-4xl">
+          <div className="bg-white p-4 rounded-lg border border-[#ea77ff]/50 shadow-xs space-y-2">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">🔌</span>
+                <h3 className="font-extrabold text-sm text-[#300059]">
+                  {lang === 'ar' ? 'إدارة رابط ومواصفات إضافة البريمير (VND Plugin)' : 'VND Plugin Link & Release Manager'}
+                </h3>
+              </div>
+              <span className="text-[11px] font-mono text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
+                Adobe Premiere Pro Suite
+              </span>
+            </div>
+            <p className="text-xs text-neutral-600">
+              {lang === 'ar'
+                ? 'من هنا يمكنك تعديل رابط التنزيل المباشر، الرابط البديل (Mirror)، الإصدار، وقائمة المميزات التي تظهر للزوار في صفحة التحميل.'
+                : 'Configure the primary download link, mirror host, version number, and featured tools displayed on the public download screen.'}
+            </p>
+          </div>
+
+          <form onSubmit={handleSavePlugin} className="space-y-4 bg-white p-5 rounded-lg border border-neutral-300 shadow-xs">
+            <div className="space-y-1">
+              <label className="block text-xs font-bold text-neutral-800">
+                {lang === 'ar' ? 'رابط التنزيل الأساسي (Google Drive, GitHub, Mega, Direct .zip):' : 'Primary Download Link (Direct / Cloud Drive):'}
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="url"
+                  required
+                  value={pluginDownloadUrl}
+                  onChange={(e) => setPluginDownloadUrl(e.target.value)}
+                  placeholder="https://drive.google.com/file/d/..."
+                  className="flex-1 p-2 border border-[#7f9db9] rounded font-mono text-xs focus:ring-1 focus:ring-[#0058e6] outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    sound.playClick();
+                    if (pluginDownloadUrl) {
+                      window.open(pluginDownloadUrl, '_blank', 'noopener,noreferrer');
+                    }
+                  }}
+                  className="px-3 py-2 bg-neutral-100 hover:bg-neutral-200 border border-neutral-300 rounded text-xs font-bold text-neutral-700 cursor-pointer shrink-0 transition"
+                >
+                  🔗 {lang === 'ar' ? 'تجربة الرابط' : 'Test Link'}
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label className="block text-xs font-bold text-neutral-800">
+                {lang === 'ar' ? 'رابط بديل إضافي (Mirror Link - اختياري):' : 'Alternative Mirror Link (Optional):'}
+              </label>
+              <input
+                type="url"
+                value={pluginMirrorUrl}
+                onChange={(e) => setPluginMirrorUrl(e.target.value)}
+                placeholder="https://mega.nz/file/..."
+                className="w-full p-2 border border-[#7f9db9] rounded font-mono text-xs focus:ring-1 focus:ring-[#0058e6] outline-none"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label className="block text-xs font-bold text-neutral-700 mb-1">
+                  {lang === 'ar' ? 'رقم الإصدار:' : 'Version:'}
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={pluginVersion}
+                  onChange={(e) => setPluginVersion(e.target.value)}
+                  placeholder="v1.4.2"
+                  className="w-full p-1.5 border border-[#7f9db9] rounded text-xs"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-neutral-700 mb-1">
+                  {lang === 'ar' ? 'حجم الملف:' : 'File Size:'}
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={pluginFileSize}
+                  onChange={(e) => setPluginFileSize(e.target.value)}
+                  placeholder="42.8 MB"
+                  className="w-full p-1.5 border border-[#7f9db9] rounded text-xs"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-neutral-700 mb-1">
+                  {lang === 'ar' ? 'تاريخ الإصدار:' : 'Release Date:'}
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={pluginReleaseDate}
+                  onChange={(e) => setPluginReleaseDate(e.target.value)}
+                  placeholder="October 2026"
+                  className="w-full p-1.5 border border-[#7f9db9] rounded text-xs"
+                />
+              </div>
+            </div>
+
+            {pluginSaveMsg && (
+              <div className="text-xs text-emerald-800 font-bold bg-emerald-50 p-2.5 rounded border border-emerald-300 flex items-center gap-2">
+                <span>✅</span>
+                <span>{pluginSaveMsg}</span>
+              </div>
+            )}
+
+            <div className="flex items-center justify-between pt-2">
+              <button
+                type="submit"
+                className="px-5 py-2 bg-gradient-to-r from-[#ea77ff] to-[#0058e6] hover:brightness-110 text-white font-black rounded text-xs shadow-md cursor-pointer transition active:scale-95"
+              >
+                💾 {lang === 'ar' ? 'حفظ وتحديث صفحة التنزيل فوراً' : 'Save & Publish Download Link'}
+              </button>
+
+              <span className="text-[11px] text-neutral-500">
+                {lang === 'ar' ? 'يتم الحفظ الدائم على المتصفح' : 'Saved persistently'}
+              </span>
+            </div>
           </form>
         </div>
       )}

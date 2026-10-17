@@ -1,4 +1,23 @@
-import { WorkItem, ClientInquiry } from '../types';
+import { WorkItem, ClientInquiry, VndPluginConfig } from '../types';
+
+export const DEFAULT_PLUGIN_CONFIG: VndPluginConfig = {
+  downloadUrl: 'https://drive.google.com/file/d/1VndPluginPremierePro/view?usp=sharing',
+  mirrorUrl: 'https://mega.nz/file/vnd-plugin-premiere-pro-latest',
+  version: 'v1.4.2',
+  releaseDate: 'October 2026',
+  fileSize: '42.8 MB',
+  compatibility: 'Adobe Premiere Pro CC 2021 – 2025 (Windows 10 / 11 64-bit)',
+  software: 'Adobe Premiere Pro',
+  features: [
+    '1-Click Smooth Kinetic Zoom & Dynamic Whip Pan Presets',
+    'Audio Beat Auto-Sync & Automatic Marker Generator',
+    'Kinetic Typography & Fast Subtitle Motion Suite',
+    'VND Signature LUTs & Film Emulation Color Grading Engine',
+    'Smart Social Aspect Ratio Exporter (9:16, 1:1, 16:9)',
+  ],
+  isVerifiedSafe: true,
+  sha256: '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08',
+};
 
 export const ANES_PROFILE = {
   name: 'Anes',

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { AppId, AppWindow, ClientInquiry, WorkItem } from '../types';
+import { AppId, AppWindow, ClientInquiry, WorkItem, VndPluginConfig } from '../types';
 import { THEMES } from '../data/themes';
-import { ANES_PROFILE, INITIAL_INQUIRIES, INITIAL_WORKS } from '../data/portfolioData';
+import { ANES_PROFILE, INITIAL_INQUIRIES, INITIAL_WORKS, DEFAULT_PLUGIN_CONFIG } from '../data/portfolioData';
 import { WindowFrame } from './WindowFrame';
 import { Taskbar } from './Taskbar';
 import { StartMenu } from './StartMenu';
@@ -13,8 +13,9 @@ import { SnakeGameApp } from './apps/SnakeGameApp';
 import { NotepadApp } from './apps/NotepadApp';
 import { OutlookApp } from './apps/OutlookApp';
 import { AdminInboxApp } from './apps/AdminInboxApp';
+import { VndPluginApp } from './apps/VndPluginApp';
 import { VndSmollAvatar, VndBigIllustration } from './common/OCAssets';
-import { XIcon, InstagramIcon, WhatsAppIcon, YouTubeIcon, PremiereIcon } from './common/BrandIcons';
+import { XIcon, InstagramIcon, WhatsAppIcon, YouTubeIcon, PremiereIcon, PluginPuzzleIcon } from './common/BrandIcons';
 import { sound } from '../utils/audio';
 
 // استيراد إعدادات وعمليات Firestore
@@ -49,7 +50,7 @@ export const Desktop: React.FC = () => {
   const [isMobileScreen, setIsMobileScreen] = useState<boolean>(() => {
     return typeof window !== 'undefined' ? window.innerWidth < 768 : false;
   });
-  const [mobileTab, setMobileTab] = useState<'works' | 'order' | 'about' | 'snake'>('works');
+  const [mobileTab, setMobileTab] = useState<'works' | 'order' | 'about' | 'snake' | 'plugin'>('works');
   const [forceDesktopOnMobile, setForceDesktopOnMobile] = useState<boolean>(false);
 
   useEffect(() => {
@@ -147,7 +148,7 @@ export const Desktop: React.FC = () => {
   // Dimensions for initial large centered showcase window
   const screenW = typeof window !== 'undefined' ? window.innerWidth : 1200;
   const screenH = typeof window !== 'undefined' ? window.innerHeight : 800;
-  const initialShowcaseW = isMobileScreen ? Math.max(320, screenW - 20) : Math.min(880, Math.max(340, screenW - 60));
+  const initialShowcaseW = isMobileScreen ? Math.max(320, screenW - 20) : Math.min(820, Math.max(340, screenW - 180));
   const initialShowcaseH = isMobileScreen ? Math.max(420, screenH - 80) : Math.min(580, Math.max(400, screenH - 120));
   const initialShowcaseX = isMobileScreen ? 10 : Math.max(20, Math.floor((screenW - initialShowcaseW) / 2));
   const initialShowcaseY = isMobileScreen ? 15 : Math.max(25, Math.floor((screenH - initialShowcaseH) / 2) - 15);
@@ -169,6 +170,17 @@ export const Desktop: React.FC = () => {
     },
   ]);
   const [activeWindowId, setActiveWindowId] = useState<string | null>('win-explorer');
+
+  // Persistent VND Plugin Configuration state (editable from Admin Control Panel)
+  const [pluginConfig, setPluginConfig] = useState<VndPluginConfig>(() => {
+    try {
+      const saved = localStorage.getItem('anes_vnd_plugin_config');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.error(e);
+    }
+    return DEFAULT_PLUGIN_CONFIG;
+  });
 
   // Easter egg peeking character state (peeks on active window, never in taskbar)
   const [peekingWindowId, setPeekingWindowId] = useState<string | null>(null);
@@ -301,6 +313,12 @@ export const Desktop: React.FC = () => {
         icon: '🗑️',
         width: 460,
         height: 360,
+      },
+      vnd_plugin: {
+        title: lang === 'ar' ? 'تحميل إضافة VND لبريمير برو — Download VND Plugin 🧩' : 'Download VND Plugin for Adobe Premiere Pro 🧩',
+        icon: '🧩',
+        width: isMobileScreen ? Math.max(320, screenW - 20) : Math.min(880, Math.max(680, screenW - 60)),
+        height: isMobileScreen ? Math.max(420, screenH - 80) : Math.min(680, Math.max(500, screenH - 80)),
       },
     };
 
@@ -812,6 +830,16 @@ export const Desktop: React.FC = () => {
               />
             </div>
           )}
+
+          {mobileTab === 'plugin' && (
+            <div className="h-full bg-white text-neutral-900 rounded-lg overflow-y-auto shadow-sm">
+              <VndPluginApp
+                config={pluginConfig}
+                onOpenInquiry={() => setMobileTab('order')}
+                lang={lang}
+              />
+            </div>
+          )}
         </div>
 
         {/* Mobile Bottom Navigation */}
@@ -824,6 +852,15 @@ export const Desktop: React.FC = () => {
           >
             <span className="text-base">🎬</span>
             <span>{lang === 'ar' ? 'الأعمال' : 'Works'}</span>
+          </button>
+          <button
+            onClick={() => setMobileTab('plugin')}
+            className={`flex flex-col items-center gap-0.5 text-[11px] ${
+              mobileTab === 'plugin' ? 'font-bold text-[#ffe09e]' : 'text-neutral-200'
+            }`}
+          >
+            <PluginPuzzleIcon size={18} />
+            <span>{lang === 'ar' ? 'الإضافة' : 'Plugin'}</span>
           </button>
           <button
             onClick={() => setMobileTab('order')}
@@ -981,11 +1018,9 @@ export const Desktop: React.FC = () => {
         </button>
       )}
 
-      {/* Desktop Icons Grid */}
+      {/* Desktop Icons Grid (Standard Left Column) */}
       <main
-        className={`absolute top-16 ${
-          lang === 'ar' ? 'right-4' : 'left-4'
-        } bottom-12 flex flex-col flex-wrap gap-4 items-center justify-start z-0 pointer-events-none`}
+        className="absolute top-16 left-4 bottom-12 flex flex-col flex-wrap gap-4 items-center justify-start z-0 pointer-events-none"
       >
         {desktopIcons.map((item) => (
           <div
@@ -1030,6 +1065,46 @@ export const Desktop: React.FC = () => {
         ))}
       </main>
 
+      {/* Featured VND Plugin Desktop Icon - Specially positioned on the RIGHT side as requested */}
+      <div
+        onClick={(e) => {
+          e.stopPropagation();
+          if (isMobileScreen) {
+            openApp('vnd_plugin');
+          } else {
+            sound.playClick();
+          }
+        }}
+        onDoubleClick={(e) => {
+          e.stopPropagation();
+          openApp('vnd_plugin');
+        }}
+        className="absolute top-20 right-4 sm:right-6 md:right-8 w-20 sm:w-24 p-1.5 rounded flex flex-col items-center gap-1 cursor-pointer pointer-events-auto hover:bg-purple-600/30 active:bg-purple-600/40 border border-transparent hover:border-white/40 transition-all text-center group z-0"
+        title={lang === 'ar' ? 'تحميل إضافة VND للبريمير (انقر مرتين للفتح)' : 'Download VND Plugin for Adobe Premiere Pro (Double-click)'}
+      >
+        {/* Jigsaw Puzzle Piece Tile (علامة تركيب) with glowing glass badge */}
+        <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-black/40 backdrop-blur-md border border-[#ea77ff]/70 flex items-center justify-center shadow-2xl group-hover:scale-105 group-hover:border-[#ea77ff] group-hover:shadow-[0_0_24px_rgba(234,119,255,0.5)] transition-all">
+          <PluginPuzzleIcon size={isMobileScreen ? 34 : 40} />
+
+          {/* Windows XP Classic Shortcut Arrow Overlay */}
+          <div className="absolute -bottom-1 -left-1 w-4 h-4 rounded-[2px] bg-white border border-black/40 shadow-xs flex items-center justify-center pointer-events-none">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+              <path d="M7.5 2.5L2 8M7.5 2.5H3.5M7.5 2.5V6.5" stroke="#1d4ed8" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+
+          {/* "تركيب / NEW" pill badge */}
+          <div className="absolute -top-1.5 -right-1.5 bg-gradient-to-r from-[#d946ef] to-[#9333ea] text-white text-[8px] font-black px-1.5 py-0.5 rounded-full border border-white shadow-xs">
+            {lang === 'ar' ? 'تركيب' : 'NEW'}
+          </div>
+        </div>
+
+        {/* Desktop icon label with Windows XP selection box */}
+        <span className="text-[11px] sm:text-xs font-bold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,1)] line-clamp-2 px-1.5 py-0.5 rounded group-hover:bg-[#0058e6] transition-colors">
+          {lang === 'ar' ? 'إضافة VND للبريمير' : 'VND Plugin (Pr)'}
+        </span>
+      </div>
+
       {/* Open Windows Rendering */}
       {windows.map((win) => {
         const isActive = activeWindowId === win.id;
@@ -1063,6 +1138,8 @@ export const Desktop: React.FC = () => {
                 ? 'vndfox Web Browser — https://vnd8.site'
                 : win.appId === 'snake'
                 ? (lang === 'ar' ? 'أدوبي بريمير برو — لا تحتاج بريمير! اطلب عمل مني' : "Adobe Premiere Pro — You don't need Premiere! Hire me")
+                : win.appId === 'vnd_plugin'
+                ? (lang === 'ar' ? 'إضافة VND الرسمية لبريمير برو — تحميل مجاني' : 'VND Plugin Hub — Official Premiere Pro Extension')
                 : win.appId === 'outlook'
                 ? 'Outlook Express — Ready to Send'
                 : 'System Normal'
@@ -1080,6 +1157,15 @@ export const Desktop: React.FC = () => {
               <VndfoxBrowserApp
                 works={works}
                 initialWorkId={win.data?.workId}
+                onOpenInquiry={() => openApp('outlook')}
+                pluginConfig={pluginConfig}
+                lang={lang}
+              />
+            )}
+
+            {win.appId === 'vnd_plugin' && (
+              <VndPluginApp
+                config={pluginConfig}
                 onOpenInquiry={() => openApp('outlook')}
                 lang={lang}
               />
@@ -1103,11 +1189,13 @@ export const Desktop: React.FC = () => {
               <AdminInboxApp
                 inquiries={inquiries}
                 works={works}
+                pluginConfig={pluginConfig}
                 onUpdateInquiryStatus={handleUpdateStatus}
                 onDeleteInquiry={handleDeleteInquiry}
                 onAddWork={handleAddWork}
                 onUpdateWork={handleUpdateWork}
                 onDeleteWork={handleDeleteWork}
+                onUpdatePluginConfig={(cfg) => setPluginConfig(cfg)}
                 lang={lang}
               />
             )}

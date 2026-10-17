@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
-import { WorkItem } from '../../types';
+import { WorkItem, VndPluginConfig } from '../../types';
+import { DEFAULT_PLUGIN_CONFIG } from '../../data/portfolioData';
 import { sound } from '../../utils/audio';
+import { VndPluginApp } from './VndPluginApp';
 
 interface VndfoxBrowserAppProps {
   works: WorkItem[];
   initialWorkId?: string;
   onOpenInquiry?: () => void;
+  pluginConfig?: VndPluginConfig;
   lang?: 'en' | 'ar';
 }
 
@@ -13,8 +16,10 @@ export const VndfoxBrowserApp: React.FC<VndfoxBrowserAppProps> = ({
   works,
   initialWorkId,
   onOpenInquiry,
+  pluginConfig = DEFAULT_PLUGIN_CONFIG,
   lang = 'ar',
 }) => {
+  const [currentPage, setCurrentPage] = useState<'video' | 'plugin'>('video');
   const [selectedWork, setSelectedWork] = useState<WorkItem>(() => {
     return works.find((w) => w.id === initialWorkId) || works[0] || {
       id: 'default',
@@ -37,15 +42,33 @@ export const VndfoxBrowserApp: React.FC<VndfoxBrowserAppProps> = ({
   const handleSelectWork = (work: WorkItem) => {
     sound.playClick();
     setIsRefreshing(true);
+    setCurrentPage('video');
     setSelectedWork(work);
     setUrlInput(`https://vnd8.site/watch?v=${work.youtubeId}`);
     setTimeout(() => setIsRefreshing(false), 250);
   };
 
-  const handleRefresh = () => {
+  const handleOpenPluginPage = () => {
     sound.playClick();
     setIsRefreshing(true);
-    setTimeout(() => setIsRefreshing(false), 400);
+    setCurrentPage('plugin');
+    setUrlInput('https://vnd8.site/plugin');
+    setTimeout(() => setIsRefreshing(false), 250);
+  };
+
+  const handleNavigate = () => {
+    sound.playClick();
+    setIsRefreshing(true);
+    if (urlInput.toLowerCase().includes('plugin')) {
+      setCurrentPage('plugin');
+    } else {
+      setCurrentPage('video');
+    }
+    setTimeout(() => setIsRefreshing(false), 300);
+  };
+
+  const handleRefresh = () => {
+    handleNavigate();
   };
 
   const menuItems = lang === 'ar' 
@@ -212,6 +235,9 @@ export const VndfoxBrowserApp: React.FC<VndfoxBrowserAppProps> = ({
             type="text"
             value={urlInput}
             onChange={(e) => setUrlInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleNavigate();
+            }}
             className="flex-1 bg-transparent focus:outline-none text-xs font-mono text-neutral-900"
           />
           <span className="text-neutral-400 text-[10px] select-none">▼</span>
@@ -219,7 +245,7 @@ export const VndfoxBrowserApp: React.FC<VndfoxBrowserAppProps> = ({
 
         {/* Classic XP "Go" Button */}
         <button
-          onClick={handleRefresh}
+          onClick={handleNavigate}
           className="flex items-center gap-1 px-2 py-0.5 bg-gradient-to-b from-[#fefefe] via-[#ece9d8] to-[#d4d0c8] hover:brightness-105 active:brightness-95 border border-[#7f9db9] rounded-sm font-black text-xs text-[#0a660a] shadow-xs cursor-pointer"
         >
           <span>→</span>
@@ -227,8 +253,57 @@ export const VndfoxBrowserApp: React.FC<VndfoxBrowserAppProps> = ({
         </button>
       </div>
 
+      {/* Classic XP Favorites & Quick Links Bar */}
+      <div className="bg-[#f0eee4] border-b border-[#d4d0c8] px-2 py-1 flex items-center gap-1.5 text-[11px] text-neutral-700 shrink-0 overflow-x-auto shadow-2xs">
+        <span className="font-bold text-neutral-500 text-[10px] uppercase shrink-0">
+          {lang === 'ar' ? 'روابط سريعة:' : 'Links:'}
+        </span>
+        <button
+          onClick={() => {
+            sound.playClick();
+            if (works.length > 0) handleSelectWork(works[0]);
+          }}
+          className={`px-2 py-0.5 rounded cursor-pointer transition flex items-center gap-1 shrink-0 ${
+            currentPage === 'video' ? 'bg-[#0058e6] text-white font-bold shadow-2xs' : 'hover:bg-neutral-200 text-neutral-800'
+          }`}
+        >
+          <span>🎬</span>
+          <span>{lang === 'ar' ? 'معرض المونتاج' : 'Video Showcase'}</span>
+        </button>
+
+        <button
+          onClick={handleOpenPluginPage}
+          className={`px-2 py-0.5 rounded cursor-pointer transition flex items-center gap-1 shrink-0 ${
+            currentPage === 'plugin'
+              ? 'bg-[#300059] text-[#ea77ff] font-bold shadow-2xs border border-[#ea77ff]/60'
+              : 'hover:bg-purple-100 text-purple-900 font-bold border border-purple-200 bg-purple-50/50'
+          }`}
+        >
+          <span>🔌</span>
+          <span>{lang === 'ar' ? 'تحميل إضافة VND (البريمير)' : 'Download VND Plugin'}</span>
+        </button>
+
+        {onOpenInquiry && (
+          <button
+            onClick={() => {
+              sound.playClick();
+              onOpenInquiry();
+            }}
+            className="px-2 py-0.5 rounded hover:bg-neutral-200 text-neutral-800 cursor-pointer transition flex items-center gap-1 shrink-0 ml-auto"
+          >
+            <span>✉️</span>
+            <span>{lang === 'ar' ? 'طلب عمل' : 'Hire Anes'}</span>
+          </button>
+        )}
+      </div>
+
       {/* 4. Web Page Viewport */}
-      <div className="flex-1 bg-[#12161f] overflow-y-auto flex flex-col md:flex-row text-white min-h-0">
+      {currentPage === 'plugin' ? (
+        <div className="flex-1 bg-[#fcfbf7] overflow-y-auto min-h-0 flex flex-col">
+          <VndPluginApp config={pluginConfig} onOpenInquiry={onOpenInquiry} lang={lang} />
+        </div>
+      ) : (
+        <div className="flex-1 bg-[#12161f] overflow-y-auto flex flex-col md:flex-row text-white min-h-0">
         {/* Main Video Viewport */}
         <div className="flex-1 p-3 sm:p-4 flex flex-col bg-[#0b0e14] border-r border-white/10 overflow-y-auto min-w-0">
           {/* Retro Web Page Banner */}
@@ -392,6 +467,7 @@ export const VndfoxBrowserApp: React.FC<VndfoxBrowserAppProps> = ({
           )}
         </div>
       </div>
+      )}
 
       {/* 5. Classic Windows XP Status Bar */}
       <div className="h-5 bg-[#ece9d8] border-t border-[#a09c8d] px-2 flex items-center justify-between text-[11px] text-neutral-700 shrink-0">

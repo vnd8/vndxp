@@ -2,7 +2,7 @@ import React from 'react';
 import { AppId, ThemeConfig } from '../types';
 import { ANES_PROFILE } from '../data/portfolioData';
 import { VndSmollAvatar } from './common/OCAssets';
-import { XIcon, InstagramIcon, WhatsAppIcon, YouTubeIcon, PremiereIcon } from './common/BrandIcons';
+import { XIcon, InstagramIcon, WhatsAppIcon, YouTubeIcon, PremiereIcon, PluginPuzzleIcon } from './common/BrandIcons';
 import { sound } from '../utils/audio';
 
 interface StartMenuProps {
@@ -113,6 +113,24 @@ export const StartMenu: React.FC<StartMenuProps> = ({
               </div>
               <div className="text-[10px] text-neutral-500 group-hover:text-white/80 truncate">
                 {lang === 'ar' ? 'وفر وقتك واطلب مونتاجك بدلاً من بريمير' : 'Save time and order your edit instead'}
+              </div>
+            </div>
+          </button>
+
+          <button
+            onClick={() => {
+              onOpenApp('vnd_plugin');
+              onClose();
+            }}
+            className="p-1.5 rounded hover:bg-[#316ac5] hover:text-white flex items-center gap-2.5 text-left transition-colors cursor-pointer group bg-purple-50/40"
+          >
+            <PluginPuzzleIcon size={24} />
+            <div className="min-w-0">
+              <div className="font-bold text-xs group-hover:text-white">
+                {lang === 'ar' ? 'تحميل إضافة VND (البريمير)' : 'Download VND Plugin'}
+              </div>
+              <div className="text-[10px] text-neutral-500 group-hover:text-white/80 truncate">
+                {lang === 'ar' ? 'إضافة مونتاج مجانية لبريمير برو' : 'Free Premiere Pro Extension'}
               </div>
             </div>
           </button>
