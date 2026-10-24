@@ -36,14 +36,20 @@ export interface AppWindow {
   data?: any;
 }
 
+export type VideoPlatform = 'youtube' | 'instagram' | 'tiktok';
+
 export interface WorkItem {
   id: string;
   youtubeId: string;
+  videoUrl?: string;
+  platform?: VideoPlatform;
+  thumbnailUrl?: string;
   titleEn: string;
   titleAr?: string;
   descEn: string;
   descAr?: string;
   category: string;
+  isVertical?: boolean;
 }
 
 export interface ClientInquiry {

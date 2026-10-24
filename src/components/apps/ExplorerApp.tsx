@@ -12,6 +12,7 @@ export const ExplorerApp: React.FC<ExplorerAppProps> = ({ works, onOpenVideo, on
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [viewMode, setViewMode] = useState<'tiles' | 'details'>('tiles');
+  const [sortBy, setSortBy] = useState<'newest' | 'oldest'>('newest');
   const [activeWork, setActiveWork] = useState<WorkItem | null>(null);
 
   // Dynamically extract all available categories so custom ones show up automatically!
@@ -30,11 +31,21 @@ export const ExplorerApp: React.FC<ExplorerAppProps> = ({ works, onOpenVideo, on
     return matchesCat && matchesQuery;
   });
 
+  const sortedWorks = [...filteredWorks].sort((a, b) => {
+    const idA = a.id || '';
+    const idB = b.id || '';
+    if (sortBy === 'newest') {
+      return idB.localeCompare(idA, undefined, { numeric: true });
+    } else {
+      return idA.localeCompare(idB, undefined, { numeric: true });
+    }
+  });
+
   return (
     <div className="flex flex-col h-full bg-white text-neutral-900 select-none font-sans">
       {/* Explorer Standard Toolbar & Address Bar */}
       <div className="bg-[#ece9d8] border-b border-[#d4d0c8] p-1.5 flex flex-col gap-1.5 text-xs">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={() => sound.playClick()}
             className="px-2.5 py-0.5 rounded border border-[#003c74] bg-white hover:bg-neutral-100 flex items-center gap-1 cursor-pointer"
@@ -57,6 +68,17 @@ export const ExplorerApp: React.FC<ExplorerAppProps> = ({ works, onOpenVideo, on
             className="px-2.5 py-0.5 rounded border border-neutral-400 hover:bg-neutral-200 cursor-pointer flex items-center gap-1.5"
           >
             <span>{viewMode === 'tiles' ? '📋 Details View' : '🖼️ Tiles View'}</span>
+          </button>
+
+          <button
+            onClick={() => {
+              sound.playClick();
+              setSortBy(sortBy === 'newest' ? 'oldest' : 'newest');
+            }}
+            className="px-2.5 py-0.5 rounded border border-neutral-400 hover:bg-neutral-200 cursor-pointer flex items-center gap-1.5 font-medium"
+            title="Toggle sorting between Newest and Oldest video projects"
+          >
+            <span>{sortBy === 'newest' ? '⏱️ Sort: Newest' : '⏳ Sort: Oldest'}</span>
           </button>
 
           <div className="ml-auto flex items-center gap-1.5">
@@ -183,7 +205,7 @@ export const ExplorerApp: React.FC<ExplorerAppProps> = ({ works, onOpenVideo, on
 
         {/* Files Grid / Details View */}
         <div className="flex-1 p-3.5 overflow-y-auto bg-white">
-          {filteredWorks.length === 0 ? (
+          {sortedWorks.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-neutral-500 gap-3 py-8 select-none">
               <img
                 src="/xp_boot.gif"
@@ -196,7 +218,7 @@ export const ExplorerApp: React.FC<ExplorerAppProps> = ({ works, onOpenVideo, on
             </div>
           ) : viewMode === 'tiles' ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
-              {filteredWorks.map((w) => {
+              {sortedWorks.map((w) => {
                 const isActive = activeWork?.id === w.id;
                 const thumb = `https://img.youtube.com/vi/${w.youtubeId}/hqdefault.jpg`;
                 return (
@@ -290,7 +312,7 @@ export const ExplorerApp: React.FC<ExplorerAppProps> = ({ works, onOpenVideo, on
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredWorks.map((w, idx) => (
+                  {sortedWorks.map((w, idx) => (
                     <tr
                       key={w.id}
                       onClick={() => {

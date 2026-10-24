@@ -1,173 +1,100 @@
 @import "tailwindcss";
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
   body {
-    font-family: 'Tajawal', Tahoma, 'Segoe UI', system-ui, sans-serif;
+    font-family: 'Tajawal', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: #141414;
+    color: #e6e6e6;
     user-select: none;
     -webkit-user-select: none;
+    overflow-x: hidden;
   }
 }
 
-/* Windows XP Classic Bevel Borders & Gradients */
-.xp-bevel-outset {
-  border-top: 1px solid #ffffff;
-  border-left: 1px solid #ffffff;
-  border-right: 1px solid #707070;
-  border-bottom: 1px solid #707070;
-  box-shadow: 1px 1px 0px 0px #404040;
+/* Adobe Premiere Pro UI Styling */
+.premiere-canvas {
+  background-color: #141414;
 }
 
-.xp-bevel-inset {
-  border-top: 1px solid #707070;
-  border-left: 1px solid #707070;
-  border-right: 1px solid #ffffff;
-  border-bottom: 1px solid #ffffff;
-  box-shadow: inset 1px 1px 0px 0px #404040;
+.premiere-panel {
+  background-color: #1e1e1e;
+  border: 1px solid #2d2d2d;
 }
 
-.xp-button-classic {
-  background: linear-gradient(180deg, #ffffff 0%, #ece9d8 15%, #ece9d8 85%, #d8d0c5 100%);
-  border: 1px solid #003c74;
-  box-shadow: inset 1px 1px 0px #fff, inset -1px -1px 0px #c2bdae;
+.premiere-panel-header {
+  background-color: #181818;
+  border-bottom: 1px solid #2d2d2d;
 }
 
-.xp-button-classic:hover {
-  background: linear-gradient(180deg, #fff7ea 0%, #ffeed2 15%, #ffe09e 85%, #eec480 100%);
-  border-color: #d17a00;
-  box-shadow: 0 0 4px #ffe09e, inset 1px 1px 0px #fff;
+.premiere-active-tab {
+  background-color: #242424;
+  color: #ffffff;
+  border-bottom: 2px solid #ea77ff;
 }
 
-.xp-button-classic:active {
-  background: linear-gradient(180deg, #d8d0c5 0%, #ece9d8 100%);
-  box-shadow: inset 1px 1px 2px #707070;
+.premiere-input {
+  background-color: #141414;
+  border: 1px solid #363636;
+  color: #f3f3f3;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-/* Custom retro scrollbars */
+.premiere-input:focus {
+  border-color: #1473e6;
+  outline: none;
+  box-shadow: 0 0 0 1px #1473e6;
+}
+
+/* Sleek Smooth Scrollbar with Glow */
 ::-webkit-scrollbar {
-  width: 14px;
-  height: 14px;
+  width: 7px;
+  height: 7px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1efe2;
-  border: 1px solid #d4d0c8;
+  background: #141414;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #c8c3b7;
-  border: 1px solid #ffffff;
-  border-right-color: #707070;
-  border-bottom-color: #707070;
+  background: #2e2e2e;
+  border-radius: 4px;
+  border: 1px solid #1e1e1e;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #b5b0a3;
+  background: #ea77ff;
+  box-shadow: 0 0 8px rgba(234, 119, 255, 0.4);
 }
 
-/* CRT Scanline Filter effect */
-.crt-overlay::before {
-  content: " ";
-  display: block;
-  position: absolute;
-  top: 0; left: 0; bottom: 0; right: 0;
-  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
-  z-index: 99999;
-  background-size: 100% 3px, 6px 100%;
-  pointer-events: none;
-  opacity: 0.6;
-}
-
-/* Windows XP Boot Progress Bar Animation */
-@keyframes xp-blocks-slide {
+/* Animations for Smooth Entrance and Transitions */
+@keyframes premiere-fade-up {
   0% {
-    transform: translateX(-120%);
-  }
-  100% {
-    transform: translateX(500%);
-  }
-}
-
-.xp-loading-bar {
-  animation: xp-blocks-slide 1.6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-.animate-xp-progress {
-  animation: xp-blocks-slide 1.6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-/* Windows XP Authentic Glossy Progress Fill */
-.xp-progress-fill {
-  background: linear-gradient(180deg, #60a5fa 0%, #2563eb 45%, #1d4ed8 55%, #3b82f6 100%);
-  box-shadow: 0 0 10px rgba(59, 130, 246, 0.7);
-}
-
-.xp-progress-block {
-  background: linear-gradient(180deg, #93c5fd 0%, #3b82f6 40%, #1d4ed8 60%, #60a5fa 100%);
-  border-top: 1px solid rgba(255, 255, 255, 0.8);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.3);
-  box-shadow: 0 0 6px rgba(56, 189, 248, 0.7);
-}
-
-/* VND Character Peeker Animations */
-@keyframes vnd-rise {
-  0% {
-    transform: translateY(88px);
     opacity: 0;
-  }
-  25% {
-    opacity: 0.6;
-  }
-  75% {
-    transform: translateY(-3px);
-    opacity: 1;
+    transform: translateY(14px);
   }
   100% {
+    opacity: 1;
     transform: translateY(0);
-    opacity: 1;
   }
 }
 
-@keyframes vnd-duck {
-  0% {
-    transform: translateY(0);
-    opacity: 1;
+.animate-premiere-fade-up {
+  animation: premiere-fade-up 350ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes premiere-glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(234, 119, 255, 0.15);
   }
-  15% {
-    transform: translateY(-2px);
-    opacity: 0.95;
-  }
-  100% {
-    transform: translateY(88px);
-    opacity: 0;
+  50% {
+    box-shadow: 0 0 25px rgba(234, 119, 255, 0.35);
   }
 }
 
-@keyframes vnd-react {
-  0% {
-    transform: translateY(0) scale(1);
-  }
-  35% {
-    transform: translateY(-3px) scale(1.05);
-  }
-  70% {
-    transform: translateY(1px) scale(1.02);
-  }
-  100% {
-    transform: translateY(0) scale(1.03);
-  }
+.animate-premiere-glow {
+  animation: premiere-glow-pulse 3s infinite ease-in-out;
 }
-
-.animate-vnd-rise {
-  animation: vnd-rise 500ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.animate-vnd-duck {
-  animation: vnd-duck 420ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-.animate-vnd-react {
-  animation: vnd-react 400ms ease-out forwards;
-}
-
-
-

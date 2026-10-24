@@ -1,5 +1,5 @@
-import { Desktop } from './components/Desktop';
+import { PremiereStudio } from './components/PremiereStudio';
 
 export default function App() {
-  return <Desktop />;
+  return <PremiereStudio />;
 }
