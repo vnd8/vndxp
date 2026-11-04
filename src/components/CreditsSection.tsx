@@ -18,7 +18,12 @@ export function CreditsSection({ lang, credits }: { lang: Lang; credits: Credit[
                 <span className="display w-10 text-lg text-ash transition-colors group-hover:text-ink" dir="ltr">
                   {String(i + 1).padStart(2, '0')}
                 </span>
-                <span className="display flex-1 text-4xl transition-transform duration-300 group-hover:translate-x-2 sm:text-6xl rtl:group-hover:-translate-x-2">
+                {c.logoUrl && (
+                  <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-bone ring-2 ring-line transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-110 group-hover:ring-ink sm:h-20 sm:w-20">
+                    <img src={c.logoUrl} alt="" loading="lazy" className="h-full w-full object-contain" />
+                  </span>
+                )}
+                <span className="display min-w-0 flex-1 text-4xl transition-transform duration-300 group-hover:translate-x-2 sm:text-6xl rtl:group-hover:-translate-x-2">
                   {c.name}
                 </span>
                 {role && <span className="text-sm text-ash transition-colors group-hover:text-ink">{role}</span>}

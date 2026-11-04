@@ -27,7 +27,7 @@ export function Process({ lang }: { lang: Lang }) {
         </ol>
 
         <h3 className="display mt-20 text-3xl sm:text-4xl">{s.toolsTitle}</h3>
-        <ul className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <ul className="mt-8 grid grid-cols-4 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
           {TOOLS.map((tool, i) => (
             <li
               key={tool.short}
@@ -36,17 +36,19 @@ export function Process({ lang }: { lang: Lang }) {
             >
               <Outline label={`app.${tool.short.toLowerCase()}`} />
               <div
-                className={`pop-in group flex items-center gap-4 border border-line bg-ink/60 p-4 transition-transform duration-300 hover:-translate-y-1 ${
+                className={`pop-in group flex items-center justify-center gap-4 border border-line bg-ink/60 p-3 sm:justify-start sm:p-4 transition-transform duration-300 hover:-translate-y-1 ${
                   tool.light ? 'opacity-80' : ''
                 }`}
               >
                 <span
-                  className="app-tile h-16 w-16 shrink-0 transition-transform duration-300 group-hover:-rotate-6"
+                  title={tool.name}
+                  className="app-tile h-14 w-14 shrink-0 sm:h-16 sm:w-16 transition-transform duration-300 group-hover:-rotate-6"
                   style={{ color: tool.color, background: tool.bg }}
                 >
                   {tool.short}
                 </span>
-                <span>
+                {/* names only where there is room; on phones the icons stand alone */}
+                <span className="hidden min-w-0 sm:block">
                   <span className="block font-bold" dir="ltr">
                     {tool.name}
                   </span>

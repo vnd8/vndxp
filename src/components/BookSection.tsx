@@ -44,7 +44,7 @@ export function BookSection({ lang }: { lang: Lang }) {
         <div>
           <Title tag={s.contactTag} lines={s.contactTitle} />
           <p className="fade-up mt-6 max-w-[34ch] text-ash">{s.contactLede}</p>
-          <ul className="fade-up mt-10 border-t border-line" style={{ ['--d' as string]: '0.15s' }}>
+          <ul id="socials" className="fade-up mt-10 scroll-mt-28 border-t border-line" style={{ ['--d' as string]: '0.15s' }}>
             {channels.map(({ href, label, value, Icon }) => (
               <li key={label}>
                 <a

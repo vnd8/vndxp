@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type FormEvent, type ReactNode } from 'react';
+import { useCallback, useEffect, useState, type ChangeEvent, type FormEvent, type ReactNode } from 'react';
 import { api, ApiError, getToken, setToken } from '../../api';
 import type { Credit, Inquiry, Work } from '../../types';
 import { platformName, resolveVideo } from '../../video';
@@ -226,20 +226,65 @@ function WorksAdmin({ onAuthError }: { onAuthError: () => void }) {
   );
 }
 
+// Shrinks a picked image to fit 400x400 and returns it as a data URL (WebP, or PNG where WebP can't be encoded).
+async function resizeLogo(file: File): Promise<string> {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise<HTMLImageElement>((ok, bad) => {
+      const i = new Image();
+      i.onload = () => ok(i);
+      i.onerror = () => bad(new Error('Not an image'));
+      i.src = url;
+    });
+    const scale = Math.min(1, 400 / Math.max(img.naturalWidth, img.naturalHeight));
+    const c = document.createElement('canvas');
+    c.width = Math.round(img.naturalWidth * scale);
+    c.height = Math.round(img.naturalHeight * scale);
+    c.getContext('2d')!.drawImage(img, 0, 0, c.width, c.height);
+    const webp = c.toDataURL('image/webp', 0.9);
+    return webp.startsWith('data:image/webp') ? webp : c.toDataURL('image/png');
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
 function CreditsAdmin({ onAuthError }: { onAuthError: () => void }) {
   const { items, msg, mutate } = useAdminList<Credit>('credits', onAuthError);
   const blank = { name: '', roleEn: '', roleAr: '', url: '', position: '0' };
   const [form, setForm] = useState(blank);
   const [editing, setEditing] = useState<string | null>(null);
+  // undefined = keep the current logo, null = remove it, string = new logo (data URL)
+  const [logo, setLogo] = useState<string | null | undefined>(undefined);
+  const [currentLogo, setCurrentLogo] = useState<string | undefined>(undefined);
+  const [logoError, setLogoError] = useState('');
   const set = (k: keyof typeof blank) => (e: { target: { value: string } }) => setForm({ ...form, [k]: e.target.value });
+  const preview = logo === null ? undefined : logo ?? currentLogo;
+
+  const reset = () => {
+    setForm(blank);
+    setEditing(null);
+    setLogo(undefined);
+    setCurrentLogo(undefined);
+    setLogoError('');
+  };
+
+  const pickLogo = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    try {
+      setLogo(await resizeLogo(file));
+      setLogoError('');
+    } catch {
+      setLogoError('هذا الملف مو صورة. جرب PNG أو JPG أو WebP.');
+    }
+  };
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
-    const ok = await mutate(editing ? `credits/${editing}` : 'credits', editing ? 'PUT' : 'POST', form, editing ? 'تم الحفظ.' : 'تمت الإضافة.');
-    if (ok) {
-      setForm(blank);
-      setEditing(null);
-    }
+    const body = logo === undefined ? form : { ...form, logo };
+    const ok = await mutate(editing ? `credits/${editing}` : 'credits', editing ? 'PUT' : 'POST', body, editing ? 'تم الحفظ.' : 'تمت الإضافة.');
+    if (ok) reset();
   };
 
   return (
@@ -260,7 +305,25 @@ function CreditsAdmin({ onAuthError }: { onAuthError: () => void }) {
         <Field label="الترتيب (الأصغر يطلع أول)">
           <input className="field" dir="ltr" inputMode="numeric" value={form.position} onChange={set('position')} />
         </Field>
-        <SubmitRow editing={!!editing} onCancel={() => (setEditing(null), setForm(blank))} msg={msg} />
+        <div className="block">
+          <span className="text-sm text-ash">الشعار (اختياري)</span>
+          <div className="mt-2 flex items-center gap-4">
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-coal ring-1 ring-line">
+              {preview ? <img src={preview} alt="" className="h-full w-full object-contain" /> : <span className="text-xs text-ash">بدون</span>}
+            </div>
+            <label className="cursor-pointer border border-line px-4 py-2 text-sm hover:border-bone">
+              {preview ? 'غيّر الصورة' : 'اختر صورة'}
+              <input type="file" accept="image/png,image/jpeg,image/webp" className="sr-only" onChange={pickLogo} />
+            </label>
+            {preview && (
+              <button type="button" onClick={() => setLogo(null)} className={rowBtn}>
+                شيل الشعار
+              </button>
+            )}
+          </div>
+          {logoError && <p className="mt-2 text-sm text-[#ff8a7a]">{logoError}</p>}
+        </div>
+        <SubmitRow editing={!!editing} onCancel={reset} msg={msg} />
       </form>
 
       <ul className="mt-10 divide-y divide-line/60 border-t border-line">
@@ -269,6 +332,9 @@ function CreditsAdmin({ onAuthError }: { onAuthError: () => void }) {
             <span className="w-8 text-ash" dir="ltr">
               {c.position}
             </span>
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-coal">
+              {c.logoUrl && <img src={c.logoUrl} alt="" className="h-full w-full object-contain" />}
+            </div>
             <div className="min-w-0 flex-1">
               <p className="truncate font-medium">{c.name}</p>
               <p className="text-sm text-ash">{c.roleAr || c.roleEn}</p>
@@ -278,6 +344,10 @@ function CreditsAdmin({ onAuthError }: { onAuthError: () => void }) {
               onClick={() => {
                 setEditing(c.id);
                 setForm({ name: c.name, roleEn: c.roleEn || '', roleAr: c.roleAr || '', url: c.url || '', position: String(c.position) });
+                setLogo(undefined);
+                setCurrentLogo(c.logoUrl);
+                setLogoError('');
+                scrollTo({ top: 0, behavior: 'smooth' });
               }}
             >
               تعديل

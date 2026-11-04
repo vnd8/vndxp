@@ -74,7 +74,22 @@ const toCredit = (r: Record<string, any>) => ({
   roleAr: r.role_ar || undefined,
   url: r.url || undefined,
   position: r.position,
+  // The version in the query string changes when the logo does, so the image can be cached for long.
+  logoUrl: r.has_logo ? `/api/logo/${r.id}?v=${r.updated_at || r.created_at}` : undefined,
 });
+
+// The list never loads the logo bytes themselves; /api/logo/:id serves them.
+const CREDIT_COLUMNS = 'id, name, role_en, role_ar, url, position, created_at, updated_at, logo IS NOT NULL AS has_logo';
+
+// Logos arrive as data URLs already resized in the admin. SVG is refused because it can carry scripts.
+const MAX_LOGO_CHARS = 400_000;
+function readLogo(v: unknown): { data: string; type: string } | null | undefined {
+  if (v === null) return null; // remove
+  if (typeof v !== 'string') return undefined; // keep as is
+  const m = v.match(/^data:(image\/(?:png|webp|jpeg));base64,([A-Za-z0-9+/=]+)$/);
+  if (!m || m[2].length > MAX_LOGO_CHARS) return undefined;
+  return { type: m[1], data: m[2] };
+}
 
 const toInquiry = (r: Record<string, any>) => ({
   id: r.id,
@@ -111,6 +126,7 @@ function readCredit(body: any) {
     roleAr: str(body.roleAr, 120) || null,
     url: /^https?:\/\//.test(url) ? url : null,
     position: Number.isFinite(Number(body.position)) ? Number(body.position) : 0,
+    logo: readLogo(body.logo),
   };
 }
 
@@ -141,8 +157,16 @@ async function handle(req: Request, env: Env): Promise<Response> {
     });
   }
   if (resource === 'credits' && method === 'GET') {
-    const { results } = await env.DB.prepare('SELECT * FROM credits ORDER BY position, created_at').all();
+    const { results } = await env.DB.prepare(`SELECT ${CREDIT_COLUMNS} FROM credits ORDER BY position, created_at`).all();
     return json(results.map(toCredit));
+  }
+  if (resource === 'logo' && method === 'GET' && id) {
+    const row = await env.DB.prepare('SELECT logo, logo_type FROM credits WHERE id = ?').bind(id).first<{ logo: string; logo_type: string }>();
+    if (!row?.logo) return fail('No logo.', 404);
+    const bytes = Uint8Array.from(atob(row.logo), (c) => c.charCodeAt(0));
+    return new Response(bytes, {
+      headers: { 'content-type': row.logo_type, 'cache-control': 'public, max-age=31536000, immutable' },
+    });
   }
   if (resource === 'inquiries' && method === 'POST' && !id) {
     const name = str(body.name, 120);
@@ -195,15 +219,21 @@ async function handle(req: Request, env: Env): Promise<Response> {
       const c = readCredit(body);
       if (!c) return fail('Name is required.');
       if (method === 'POST') {
+        const now = Date.now();
         await env.DB.prepare(
-          'INSERT INTO credits (id, name, role_en, role_ar, url, position, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+          'INSERT INTO credits (id, name, role_en, role_ar, url, position, logo, logo_type, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
         )
-          .bind(newId('c'), c.name, c.roleEn, c.roleAr, c.url, c.position, Date.now())
+          .bind(newId('c'), c.name, c.roleEn, c.roleAr, c.url, c.position, c.logo?.data ?? null, c.logo?.type ?? null, now, now)
           .run();
       } else {
-        await env.DB.prepare('UPDATE credits SET name = ?, role_en = ?, role_ar = ?, url = ?, position = ? WHERE id = ?')
-          .bind(c.name, c.roleEn, c.roleAr, c.url, c.position, id)
+        await env.DB.prepare('UPDATE credits SET name = ?, role_en = ?, role_ar = ?, url = ?, position = ?, updated_at = ? WHERE id = ?')
+          .bind(c.name, c.roleEn, c.roleAr, c.url, c.position, Date.now(), id)
           .run();
+        if (c.logo !== undefined) {
+          await env.DB.prepare('UPDATE credits SET logo = ?, logo_type = ? WHERE id = ?')
+            .bind(c.logo?.data ?? null, c.logo?.type ?? null, id)
+            .run();
+        }
       }
       return json({ ok: true });
     }

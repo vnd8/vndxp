@@ -17,6 +17,7 @@ export interface Credit {
   roleAr?: string;
   url?: string;
   position: number;
+  logoUrl?: string;
 }
 
 export interface Inquiry {

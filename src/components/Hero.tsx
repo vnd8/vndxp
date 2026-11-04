@@ -128,9 +128,7 @@ export function Hero({ lang, build: stage }: { lang: Lang; build: 'run' | 'done'
       </div>
 
       <a
-        href={PROFILE.youtubeUrl}
-        target="_blank"
-        rel="noopener noreferrer"
+        href="#socials"
         className="absolute end-4 top-24 hidden items-center gap-2 text-xs text-ash hover:text-bone sm:end-8 lg:flex"
         dir="ltr"
       >
