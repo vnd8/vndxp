@@ -149,7 +149,7 @@ const rowBtn = 'cursor-pointer text-sm text-ash hover:text-bone';
 
 function WorksAdmin({ onAuthError }: { onAuthError: () => void }) {
   const { items, msg, mutate } = useAdminList<Work>('works', onAuthError);
-  const blank = { url: '', titleEn: '', titleAr: '', category: '', thumbnailUrl: '' };
+  const blank = { url: '', titleEn: '', titleAr: '', category: '', thumbnailUrl: '', position: '0' };
   const [form, setForm] = useState(blank);
   const [editing, setEditing] = useState<string | null>(null);
   const set = (k: keyof typeof blank) => (e: { target: { value: string } }) => setForm({ ...form, [k]: e.target.value });
@@ -188,6 +188,9 @@ function WorksAdmin({ onAuthError }: { onAuthError: () => void }) {
         <Field label="رابط صورة مصغرة (اختياري، يوتيوب يجيبها تلقائي)">
           <input className="field" dir="ltr" value={form.thumbnailUrl} onChange={set('thumbnailUrl')} />
         </Field>
+        <Field label="الترتيب (الأصغر يطلع أول، وأول فيديو عريض يطلع كبير)">
+          <input className="field" dir="ltr" inputMode="numeric" value={form.position} onChange={set('position')} />
+        </Field>
         <SubmitRow editing={!!editing} onCancel={() => (setEditing(null), setForm(blank))} msg={msg} />
       </form>
 
@@ -196,6 +199,9 @@ function WorksAdmin({ onAuthError }: { onAuthError: () => void }) {
           const v = resolveVideo(w.url, w.thumbnailUrl);
           return (
             <li key={w.id} className="flex items-center gap-4 py-3">
+              <span className="w-8 text-ash" dir="ltr">
+                {w.position}
+              </span>
               <div className="h-12 w-20 shrink-0 bg-coal">
                 {v.thumbnailUrl && <img src={v.thumbnailUrl} alt="" className="h-full w-full object-cover" />}
               </div>
@@ -209,7 +215,7 @@ function WorksAdmin({ onAuthError }: { onAuthError: () => void }) {
                 className={rowBtn}
                 onClick={() => {
                   setEditing(w.id);
-                  setForm({ url: w.url, titleEn: w.titleEn, titleAr: w.titleAr || '', category: w.category, thumbnailUrl: w.thumbnailUrl || '' });
+                  setForm({ url: w.url, titleEn: w.titleEn, titleAr: w.titleAr || '', category: w.category, thumbnailUrl: w.thumbnailUrl || '', position: String(w.position ?? 0) });
                   scrollTo({ top: 0, behavior: 'smooth' });
                 }}
               >

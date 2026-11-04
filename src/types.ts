@@ -7,6 +7,7 @@ export interface Work {
   category: string;
   titleEn: string;
   titleAr?: string;
+  position: number;
   createdAt: number;
 }
 

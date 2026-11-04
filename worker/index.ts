@@ -64,6 +64,7 @@ const toWork = (r: Record<string, any>) => ({
   category: r.category,
   titleEn: r.title_en,
   titleAr: r.title_ar || undefined,
+  position: r.position ?? 0,
   createdAt: r.created_at,
 });
 
@@ -113,6 +114,7 @@ function readWork(body: any) {
     category: str(body.category, 40) || 'Other',
     titleEn,
     titleAr: str(body.titleAr, 200) || null,
+    position: Number.isFinite(Number(body.position)) ? Number(body.position) : 0,
   };
 }
 
@@ -138,7 +140,7 @@ async function handle(req: Request, env: Env): Promise<Response> {
 
   // public
   if (resource === 'works' && method === 'GET') {
-    const { results } = await env.DB.prepare('SELECT * FROM works ORDER BY created_at DESC').all();
+    const { results } = await env.DB.prepare('SELECT * FROM works ORDER BY position, created_at DESC').all();
     return json(results.map(toWork));
   }
   // TikTok cover images, via TikTok's public oEmbed API. The image URLs it returns expire,
@@ -197,13 +199,13 @@ async function handle(req: Request, env: Env): Promise<Response> {
       if (!w) return fail('A link starting with http and an English title are required.');
       if (method === 'POST') {
         await env.DB.prepare(
-          'INSERT INTO works (id, url, thumbnail_url, category, title_en, title_ar, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+          'INSERT INTO works (id, url, thumbnail_url, category, title_en, title_ar, position, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
         )
-          .bind(newId('w'), w.url, w.thumbnailUrl, w.category, w.titleEn, w.titleAr, Date.now())
+          .bind(newId('w'), w.url, w.thumbnailUrl, w.category, w.titleEn, w.titleAr, w.position, Date.now())
           .run();
       } else {
-        await env.DB.prepare('UPDATE works SET url = ?, thumbnail_url = ?, category = ?, title_en = ?, title_ar = ? WHERE id = ?')
-          .bind(w.url, w.thumbnailUrl, w.category, w.titleEn, w.titleAr, id)
+        await env.DB.prepare('UPDATE works SET url = ?, thumbnail_url = ?, category = ?, title_en = ?, title_ar = ?, position = ? WHERE id = ?')
+          .bind(w.url, w.thumbnailUrl, w.category, w.titleEn, w.titleAr, w.position, id)
           .run();
       }
       return json({ ok: true });
