@@ -67,7 +67,7 @@ export function BookSection({ lang }: { lang: Lang }) {
         </div>
 
         <div className="fade-up relative self-start bg-coal p-6 ring-1 ring-line sm:p-10" style={{ ['--d' as string]: '0.2s' }}>
-          <img src="/vndsmoll.png" alt="" className="float absolute -top-12 end-6 w-24 rotate-12 sm:-top-16 sm:w-32" />
+          <img src="/skull-logo.png" alt="" className="float absolute -top-12 end-6 w-24 rotate-12 sm:-top-16 sm:w-32" />
           <Star size={28} className="absolute -top-6 end-36 text-flame sm:end-44" />
           {state === 'sent' ? (
             <div role="status" className="py-10">

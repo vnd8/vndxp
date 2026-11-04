@@ -21,7 +21,7 @@ export function Header({ lang, onToggleLang }: { lang: Lang; onToggleLang: () =>
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-8">
         <a href="#" className="flex items-center gap-2" dir="ltr" aria-label="Anes, back to top">
-          <img src="/vndsmoll.png" alt="" className="h-9 w-9 transition-transform hover:-rotate-12" />
+          <img src="/skull-logo.png" alt="" className="h-8 w-auto transition-transform hover:-rotate-12" />
           <span className="display text-2xl">
             ANES<span className="text-ember">.</span>
           </span>
