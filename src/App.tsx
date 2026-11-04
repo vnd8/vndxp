@@ -1,9 +1,9 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { api } from './api';
 import type { Credit, Lang, Work } from './types';
-import { AgentCursors, CursorTrail } from './fx';
+import { AgentCursors, CursorTrail, reduced } from './fx';
 import { Header } from './components/Header';
-import { Hero } from './components/Hero';
+import { BUILD_END, Hero } from './components/Hero';
 import { Marquee } from './components/Marquee';
 import { WorkSection } from './components/WorkSection';
 import { CreditsSection } from './components/CreditsSection';
@@ -28,6 +28,14 @@ export default function App() {
   const [works, setWorks] = useState<Work[] | null>(null);
   const [credits, setCredits] = useState<Credit[]>([]);
   const isAdmin = location.pathname.startsWith('/admin');
+  // The hero and the strip build together once on load; the cursors follow the same clock.
+  const [build, setBuild] = useState<'run' | 'done'>(() => (reduced() ? 'done' : 'run'));
+
+  useEffect(() => {
+    if (build !== 'run') return;
+    const id = setTimeout(() => setBuild('done'), (BUILD_END + 0.6) * 1000);
+    return () => clearTimeout(id);
+  }, [build]);
 
   useEffect(() => {
     if (isAdmin) return;
@@ -57,11 +65,11 @@ export default function App() {
   return (
     <div className="grain">
       <CursorTrail />
-      <AgentCursors />
+      <AgentCursors run={build === 'run'} />
       <Header lang={lang} onToggleLang={() => setLang(lang === 'ar' ? 'en' : 'ar')} />
-      <main>
-        <Hero lang={lang} />
-        <Marquee lang={lang} />
+      <main className="overflow-x-clip">
+        <Hero lang={lang} build={build} />
+        <Marquee lang={lang} build={build} />
         <WorkSection lang={lang} works={works} />
         {credits.length > 0 && <CreditsSection lang={lang} credits={credits} />}
         <Process lang={lang} />

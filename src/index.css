@@ -67,7 +67,12 @@ html[lang='ar'] .script {
   font-weight: 700;
 }
 
+/* The gradient only paints inside the box, and Arabic descenders (ج، ي) fall below it,
+   so the box is extended downward and pulled back with a negative margin. */
 .ember-text {
+  display: inline-block;
+  padding-bottom: 0.32em;
+  margin-bottom: -0.32em;
   background: linear-gradient(180deg, #ff5a45 0%, var(--color-ember) 35%, var(--color-blood) 100%);
   -webkit-background-clip: text;
   background-clip: text;
@@ -247,8 +252,8 @@ html[dir='rtl'] .marquee-track {
   margin-bottom: -0.14em;
 }
 html[lang='ar'] .rise {
-  padding-bottom: 0.3em;
-  margin-bottom: -0.3em;
+  padding-bottom: 0.45em;
+  margin-bottom: -0.45em;
 }
 
 :root {

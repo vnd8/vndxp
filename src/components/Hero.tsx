@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useRef, type CSSProperties } from 'react';
 import { PROFILE, t } from '../content';
 import { Outline, reduced, Star } from '../fx';
 import type { Lang } from '../types';
@@ -8,22 +8,15 @@ const v = (vars: Record<string, number>) =>
   Object.fromEntries(Object.entries(vars).map(([k, n]) => [`--${k}`, `${n}s`])) as CSSProperties;
 
 // Every selection box fades out together, so each box's duration is END minus its start.
-const END = 3.2;
+export const BUILD_END = 3.2;
+const END = BUILD_END;
 const box = (b: number) => v({ b, bd: END - b });
 
-export function Hero({ lang }: { lang: Lang }) {
+export function Hero({ lang, build: stage }: { lang: Lang; build: 'run' | 'done' }) {
   const s = t(lang);
-  const art = useRef<HTMLDivElement>(null);
   const word = useRef<HTMLDivElement>(null);
-  const [stage, setStage] = useState<'run' | 'done'>(() => (reduced() ? 'done' : 'run'));
 
-  useEffect(() => {
-    if (stage !== 'run') return;
-    const id = setTimeout(() => setStage('done'), (END + 0.6) * 1000);
-    return () => clearTimeout(id);
-  }, [stage]);
-
-  // The character and the big word drift against the mouse in opposite directions.
+  // The big word drifts against the mouse.
   useEffect(() => {
     if (reduced() || matchMedia('(pointer: coarse)').matches) return;
     let raf = 0;
@@ -32,7 +25,6 @@ export function Hero({ lang }: { lang: Lang }) {
       raf = requestAnimationFrame(() => {
         const x = e.clientX / innerWidth - 0.5;
         const y = e.clientY / innerHeight - 0.5;
-        if (art.current) art.current.style.transform = `translate(${x * 24}px, ${y * 14}px)`;
         if (word.current) word.current.style.transform = `translate(${x * -18}px, ${y * -8}px)`;
       });
     };
@@ -42,7 +34,7 @@ export function Hero({ lang }: { lang: Lang }) {
 
   return (
     <section
-      className={`relative isolate overflow-hidden ${stage === 'run' ? 'build-run' : 'build-done'}`}
+      className={`relative overflow-x-clip ${stage === 'run' ? 'build-run' : 'build-done'}`}
       style={{ minHeight: 'min(100svh, 980px)' }}
     >
       {/* background: halftone, red glow, drifting stars */}
@@ -71,7 +63,7 @@ export function Hero({ lang }: { lang: Lang }) {
           >
             <Outline label="h1.portfolio" />
             {'PORTFOLIO'.split('').map((ch, i) => (
-              <span key={i} className="letter ember-text" style={v({ c: 1.3 + i * 0.07 })}>
+              <span key={i} className="letter ember-text" style={v({ c: 1.3 + i * 0.07 })} data-cursor={i % 4 === 0 ? 1.3 + i * 0.07 : undefined}>
                 {ch}
               </span>
             ))}
@@ -79,27 +71,9 @@ export function Hero({ lang }: { lang: Lang }) {
         </div>
       </div>
 
-      {/* the character */}
-      <div className="pointer-events-none absolute inset-x-0 -bottom-4 -z-10 flex justify-center">
-        <div ref={art} className="transition-transform duration-300 ease-out">
-          <div className="bp-box w-[min(96vw,720px)]" style={box(0.8)}>
-            <span className="bp-fill" style={v({ b: 0.8, fd: 1.9 })} />
-            <Outline label="img.character" />
-            <img
-              src="/vndseen.webp"
-              alt="Anes's skull character peeking over the edge"
-              width={1400}
-              height={1153}
-              className="pop-in w-full drop-shadow-[0_30px_60px_rgba(0,0,0,0.6)]"
-              style={v({ c: 2.1 })}
-            />
-          </div>
-        </div>
-      </div>
-
-      <div className="mx-auto grid max-w-7xl gap-10 px-4 pt-[44vw] pb-[86vw] sm:px-8 sm:pt-[34vh] sm:pb-24 md:grid-cols-[1fr_auto] md:pt-[30vh]">
+      <div className="relative z-30 mx-auto grid max-w-7xl gap-10 px-4 pt-[44vw] pb-[86vw] sm:px-8 sm:pt-[34vh] sm:pb-24 md:grid-cols-[1fr_auto] md:pt-[30vh]">
         <div className="max-w-sm">
-          <div className="bp-box w-fit" style={box(0.5)}>
+          <div className="bp-box w-fit" style={box(0.5)} data-cursor="1.0">
             <Outline label="span.hello" />
             <p className="script -rotate-3 text-4xl text-flame sm:text-5xl">
               <span className="typed" style={v({ c: 1.0 })}>
@@ -107,23 +81,23 @@ export function Hero({ lang }: { lang: Lang }) {
               </span>
             </p>
           </div>
-          <div className="bp-box mt-1 w-fit rtl:ms-0" style={box(0.6)}>
+          <div className="bp-box mt-1 w-fit" style={box(0.6)} data-cursor="1.25">
             <Outline label="h2.name" />
             <p className="display pop-in text-[clamp(3.5rem,8vw,6rem)] text-bone" dir="ltr" style={v({ c: 1.25 })}>
               ANES<span className="text-ember">.</span>
             </p>
           </div>
-          <p className="display pop-in mt-3 text-xl leading-tight text-ember" style={v({ c: 1.6 })}>
+          <p className="display pop-in mt-3 text-xl leading-tight text-ember" style={v({ c: 1.6 })} data-cursor="1.6">
             {s.role[0]}
             <br />
             {s.role[1]}
           </p>
-          <p className="pop-in mt-4 text-ash" style={v({ c: 1.7 })}>
+          <p className="pop-in mt-4 text-ash" style={v({ c: 1.7 })} data-cursor="1.7">
             {s.lede}
           </p>
           <div className="bp-box mt-7 w-fit" style={box(1.0)}>
             <Outline label="nav.cta" />
-            <div className="pop-in flex flex-wrap gap-3" style={v({ c: 1.85 })}>
+            <div className="pop-in flex flex-wrap gap-3" style={v({ c: 1.85 })} data-cursor="1.85">
               <a
                 href="#contact"
                 className="group relative overflow-hidden bg-ember px-6 py-3.5 font-bold text-ink transition-transform hover:-translate-y-0.5"
@@ -142,7 +116,7 @@ export function Hero({ lang }: { lang: Lang }) {
           <Outline label="ul.stats" />
           <ul className="grid grid-cols-3 gap-4 md:flex md:flex-col md:gap-5 md:text-end">
             {s.stats.map((st, i) => (
-              <li key={st.l} className="pop-in" style={v({ c: 2.0 + i * 0.12 })}>
+              <li key={st.l} className="pop-in" style={v({ c: 2.0 + i * 0.12 })} data-cursor={2.0 + i * 0.12}>
                 <p className="display text-4xl text-ember sm:text-6xl" dir="ltr">
                   {st.n}
                 </p>

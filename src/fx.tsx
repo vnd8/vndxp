@@ -173,50 +173,52 @@ function Arrow({ color }: { color: string }) {
   );
 }
 
-// Cursors named after the tools I use. They swarm in from the bottom, then wander the page
-// and "click" on real buttons and cards, as if the site is being worked on live.
-export function AgentCursors() {
+// Cursors named after the tools I use. They only appear while the hero builds: they swarm in,
+// fly to each element marked data-cursor="<seconds>" just before it lands, click it into place
+// from the top of the page down to the strip, then leave.
+export function AgentCursors({ run }: { run: boolean }) {
   const refs = useRef<(HTMLDivElement | null)[]>([]);
   const swarm = useRef<(HTMLDivElement | null)[]>([]);
-  const [on] = useState(() => !reduced());
+  const [on, setOn] = useState(run);
 
   useEffect(() => {
     if (!on) return;
-    const W = () => innerWidth;
-    const H = () => innerHeight;
+    const t0 = performance.now();
+    const W = innerWidth;
+    const H = innerHeight;
     const coarse = matchMedia('(pointer: coarse)').matches;
-    const agents = AGENTS.map((_, i) => ({
-      x: W() / 2 + (i - 1.5) * 30,
-      y: H() + 40,
-      tx: W() * (0.2 + 0.2 * i),
-      ty: H() * (0.3 + 0.1 * (i % 2)),
-      next: performance.now() + 900 + i * 250,
+    const count = coarse ? 2 : AGENTS.length;
+
+    // Every marked element, in the order it lands, dealt out to the cursors in turn.
+    const jobs = [...document.querySelectorAll<HTMLElement>('[data-cursor]')]
+      .map((el) => ({ el, at: Number(el.dataset.cursor) }))
+      .filter((j) => Number.isFinite(j.at))
+      .sort((x, y) => x.at - y.at);
+    const queues: (typeof jobs)[] = Array.from({ length: count }, () => []);
+    jobs.forEach((j, i) => queues[i % count].push(j));
+    const lastAt = jobs.length ? jobs[jobs.length - 1].at : 2.5;
+    const leaveAt = lastAt + 0.45;
+
+    const agents = queues.map((q, i) => ({
+      q,
+      x: W / 2 + (i - count / 2) * 36,
+      y: H + 40,
+      exitX: W * (0.15 + 0.7 * Math.random()),
+      clicked: new Set<number>(),
     }));
     const flock = Array.from({ length: 10 }, (_, i) => ({
-      x: W() / 2 + (Math.random() - 0.5) * 80,
-      y: H() + 20 + Math.random() * 60,
+      x: W / 2 + (Math.random() - 0.5) * 80,
+      y: H + 20 + Math.random() * 60,
       vx: (Math.random() - 0.5) * 9,
       vy: -(9 + Math.random() * 7),
       life: 1,
       i,
     }));
 
-    const pickTarget = (a: (typeof agents)[number]) => {
-      const els = [...document.querySelectorAll<HTMLElement>('a, button, h2, li img')].filter((el) => {
-        const r = el.getBoundingClientRect();
-        return r.width > 20 && r.top > 60 && r.bottom < H() - 10;
-      });
-      if (els.length && Math.random() < 0.65) {
-        const r = els[(Math.random() * els.length) | 0].getBoundingClientRect();
-        a.tx = r.left + r.width * (0.3 + Math.random() * 0.4);
-        a.ty = r.top + r.height * (0.3 + Math.random() * 0.4);
-        return true;
-      }
-      a.tx = W() * (0.08 + Math.random() * 0.84);
-      a.ty = H() * (0.15 + Math.random() * 0.75);
-      return false;
+    const point = (el: HTMLElement, seed: number) => {
+      const r = el.getBoundingClientRect();
+      return { x: r.left + r.width * (0.35 + 0.3 * seed), y: r.top + Math.min(r.height * 0.5, 60) };
     };
-
     const click = (el: HTMLDivElement, color: string) => {
       const c = document.createElement('span');
       c.className = 'agent-click';
@@ -226,21 +228,36 @@ export function AgentCursors() {
     };
 
     let raf = 0;
-    let last = performance.now();
+    let last = t0;
     const tick = (now: number) => {
+      const time = (now - t0) / 1000;
       const dt = Math.min(2.5, (now - last) / 16.7);
       last = now;
       agents.forEach((a, i) => {
         const el = refs.current[i];
         if (!el) return;
-        a.x += (a.tx - a.x) * 0.045 * dt;
-        a.y += (a.ty - a.y) * 0.045 * dt;
-        el.style.transform = `translate(${a.x}px, ${a.y}px)`;
-        if (now > a.next) {
-          const onElement = pickTarget(a);
-          a.next = now + 1600 + Math.random() * 2600;
-          if (onElement) setTimeout(() => click(el, AGENTS[i].color), 1100);
+        let tx: number;
+        let ty: number;
+        let ease = 0.13;
+        if (time > leaveAt) {
+          // leave downward past the strip, fading
+          tx = a.exitX;
+          ty = H + 120;
+          ease = 0.06;
+          el.style.opacity = String(Math.max(0, 1 - (time - leaveAt) * 1.6));
+        } else {
+          const k = a.q.findIndex((j) => j.at > time - 0.12);
+          const job = a.q[k] ?? a.q[a.q.length - 1];
+          if (!job) return;
+          ({ x: tx, y: ty } = point(job.el, (i + 1) / (count + 1)));
+          if (k >= 0 && time >= job.at - 0.05 && !a.clicked.has(k)) {
+            a.clicked.add(k);
+            click(el, AGENTS[i].color);
+          }
         }
+        a.x += (tx - a.x) * ease * dt;
+        a.y += (ty - a.y) * ease * dt;
+        el.style.transform = `translate(${a.x}px, ${a.y}px)`;
       });
       flock.forEach((p) => {
         const el = swarm.current[p.i];
@@ -253,11 +270,11 @@ export function AgentCursors() {
         el.style.transform = `translate(${p.x}px, ${p.y}px) rotate(${p.vx * 4}deg)`;
         el.style.opacity = String(Math.max(0, p.life));
       });
-      raf = requestAnimationFrame(tick);
+      if (time > leaveAt + 0.9) setOn(false);
+      else raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
-    // On phones two cursors are enough.
-    if (coarse) refs.current.slice(2).forEach((el) => el && (el.style.display = 'none'));
+    if (coarse) refs.current.slice(count).forEach((el) => el && (el.style.display = 'none'));
     return () => cancelAnimationFrame(raf);
   }, [on]);
 
