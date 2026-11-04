@@ -1,20 +1,28 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# vnd8.site
 
-# Run and deploy your AI Studio app
+Portfolio for Anes (@vnd8d). React + Vite front end, Cloudflare Worker API, Cloudflare D1 database.
 
-This contains everything you need to run your app locally.
+- `/` the site. Clips and credits come from the database.
+- `/admin` add, edit and delete clips and credits, read booking requests.
 
-View your app in AI Studio: https://ai.studio/apps/64e35a7f-51a8-4ebf-b703-3196fd17b599
+## One-time Cloudflare setup
 
-## Run Locally
+```bash
+npm install
+npx wrangler login
+npx wrangler d1 create vndxp            # copy the database_id into wrangler.jsonc
+npm run db:migrate                      # creates the tables and loads the existing clips
+npx wrangler secret put ADMIN_PASSWORD  # the password for /admin
+```
 
-**Prerequisites:**  Node.js
+After that, pushing to GitHub redeploys through Workers Builds (build command `npm run build`,
+deploy command `npx wrangler deploy`), or run `npm run deploy` by hand.
 
+## Local development
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+```bash
+npm run db:migrate:local
+npm run dev
+```
+
+The local admin password is in `.dev.vars` (not committed): `ADMIN_PASSWORD=...`.

@@ -1,11 +1,11 @@
 {
-  "name": "Anes (@vnd8d) — Professional Video Editor",
+  "name": "Anes (@vnd8d) — Video Editor",
   "short_name": "Anes @vnd8d",
   "description": "Portfolio of Anes (@vnd8d) - High-retention video editing, motion graphics, and cinematic color grading.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#000000",
-  "theme_color": "#8b263e",
+  "background_color": "#0c0a0e",
+  "theme_color": "#0c0a0e",
   "icons": [
     {
       "src": "/favicon-32x32.png",
