@@ -71,7 +71,7 @@ export function Hero({ lang, build: stage }: { lang: Lang; build: 'run' | 'done'
         </div>
       </div>
 
-      <div className="relative z-30 mx-auto grid max-w-7xl gap-10 px-4 pt-[44vw] pb-[86vw] sm:px-8 sm:pt-[34vh] sm:pb-24 md:grid-cols-[1fr_auto] md:pt-[30vh]">
+      <div className="relative z-30 mx-auto grid max-w-7xl gap-10 px-4 pt-[44vw] pb-[68vw] sm:px-8 sm:pt-[34vh] sm:pb-24 md:grid-cols-[1fr_auto] md:pt-[30vh]">
         <div className="max-w-sm">
           <div className="bp-box w-fit" style={box(0.5)} data-cursor="1.0">
             <Outline label="span.hello" />
