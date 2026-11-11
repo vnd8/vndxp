@@ -18,7 +18,7 @@ export const setToken = (token: string | null) => {
 };
 
 export class ApiError extends Error {
-  constructor(message: string, public status: number) {
+  constructor(message: string, public status: number, public retryAfter?: number) {
     super(message);
   }
 }
@@ -34,6 +34,6 @@ export async function api<T = unknown>(path: string, method = 'GET', body?: unkn
     body: body ? JSON.stringify(body) : undefined,
   });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new ApiError(data.error || `Request failed (${res.status})`, res.status);
+  if (!res.ok) throw new ApiError(data.error || `Request failed (${res.status})`, res.status, Number(data.retryAfter) || undefined);
   return data as T;
 }

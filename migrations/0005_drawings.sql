@@ -4,5 +4,6 @@ CREATE TABLE IF NOT EXISTS drawings (
   id TEXT PRIMARY KEY,
   name TEXT,
   image TEXT NOT NULL,
-  created_at INTEGER NOT NULL
+  created_at INTEGER NOT NULL,
+  visitor TEXT
 );

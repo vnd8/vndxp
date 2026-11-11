@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
-import { api } from '../api';
+import { api, ApiError } from '../api';
 import { t } from '../content';
 import type { Lang } from '../types';
 
@@ -9,6 +9,16 @@ import type { Lang } from '../types';
 const W = 640;
 const H = 400;
 const MAX_UNDO = 20;
+const COOLDOWN = 60; // seconds between drawings; the server enforces the same
+const COOLDOWN_KEY = 'paint_next';
+
+function storedCooldown() {
+  try {
+    return Math.max(0, Math.ceil((Number(localStorage.getItem(COOLDOWN_KEY)) - Date.now()) / 1000)) || 0;
+  } catch {
+    return 0;
+  }
+}
 
 type Tool = 'pencil' | 'brush' | 'eraser' | 'fill' | 'spray' | 'line' | 'rect' | 'ellipse';
 
@@ -97,6 +107,24 @@ export function PaintSection({ lang }: { lang: Lang }) {
   const [name, setName] = useState('');
   const [state, setState] = useState<'idle' | 'sending' | 'sent'>('idle');
   const [error, setError] = useState('');
+  const [wait, setWait] = useState(storedCooldown);
+  const [limited, setLimited] = useState(false);
+
+  // Counts the cooldown down once a second.
+  useEffect(() => {
+    if (wait <= 0) return;
+    const id = setTimeout(() => setWait(storedCooldown()), 1000);
+    return () => clearTimeout(id);
+  }, [wait]);
+
+  const startCooldown = (seconds: number) => {
+    try {
+      localStorage.setItem(COOLDOWN_KEY, String(Date.now() + seconds * 1000));
+    } catch {
+      /* storage unavailable */
+    }
+    setWait(seconds);
+  };
 
   const ctx = () => canvas.current!.getContext('2d', { willReadFrequently: true })!;
 
@@ -210,13 +238,28 @@ export function PaintSection({ lang }: { lang: Lang }) {
     try {
       await api('drawings', 'POST', { name, image: canvas.current!.toDataURL('image/png') });
       setState('sent');
-    } catch {
+      startCooldown(COOLDOWN);
+    } catch (err) {
       setState('idle');
-      setError(s.paintFailed);
+      if (err instanceof ApiError && err.status === 429) {
+        const seconds = err.retryAfter ?? COOLDOWN;
+        if (seconds > 120) setLimited(true);
+        else startCooldown(seconds);
+      } else setError(s.paintFailed);
     }
   };
 
-  const status = state === 'sent' ? s.paintSent : state === 'sending' ? s.sending : error || s.paintHint;
+  const waiting = wait > 0 && state === 'idle';
+  const status =
+    state === 'sent'
+      ? s.paintSent
+      : state === 'sending'
+        ? s.sending
+        : limited
+          ? s.paintLimit
+          : waiting
+            ? `${s.paintWait} ${wait}${s.seconds}`
+            : error || s.paintHint;
 
   return (
     <section id="paint" className="border-t-2 border-line bg-coal py-24">
@@ -331,13 +374,13 @@ export function PaintSection({ lang }: { lang: Lang }) {
               disabled={state !== 'idle'}
               className="ms-auto h-7 w-36 min-w-0 flex-1 border border-[#7f9db9] bg-white px-2 text-[13px] text-black sm:flex-none"
             />
-            <button type="button" className={`${xpButton} font-bold`} onClick={send} disabled={state !== 'idle'}>
-              {s.paintSend}
+            <button type="button" className={`${xpButton} font-bold`} onClick={send} disabled={state !== 'idle' || waiting || limited}>
+              {waiting ? `${s.paintSend} (${wait})` : s.paintSend}
             </button>
           </div>
 
           <div className="flex gap-1 border-t border-white px-1 pb-1 text-[12px]">
-            <p role="status" dir="auto" className={`${bevelIn} min-w-0 flex-1 truncate px-2 py-0.5 ${error ? 'text-[#b00000]' : ''}`}>
+            <p role="status" dir="auto" className={`${bevelIn} min-w-0 flex-1 truncate px-2 py-0.5 ${error || limited ? 'text-[#b00000]' : ''}`}>
               {status}
             </p>
             <p className={`${bevelIn} tc hidden w-24 px-2 py-0.5 sm:block`} aria-hidden>

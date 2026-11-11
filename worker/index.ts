@@ -117,12 +117,44 @@ const toDrawing = (r: Record<string, any>) => ({
 
 // Drawings arrive as PNG data URLs from the paint window's 640x400 canvas.
 const MAX_DRAWING_CHARS = 600_000;
-const MAX_DRAWINGS = 400;
+const DRAWING_SIZE = [640, 400];
+// Spam limits: one visitor, and everyone together.
+const COOLDOWN_MS = 60 * 1000;
+const MAX_PER_VISITOR_PER_DAY = 5;
 const MAX_DRAWINGS_PER_10_MIN = 15;
+const MAX_DRAWINGS = 400;
 
 // Created on first use so the feature works before the migration has been applied.
-const ensureDrawings = (env: Env) =>
-  env.DB.prepare('CREATE TABLE IF NOT EXISTS drawings (id TEXT PRIMARY KEY, name TEXT, image TEXT NOT NULL, created_at INTEGER NOT NULL)').run();
+let drawingsReady = false;
+async function ensureDrawings(env: Env) {
+  if (drawingsReady) return;
+  await env.DB.prepare(
+    'CREATE TABLE IF NOT EXISTS drawings (id TEXT PRIMARY KEY, name TEXT, image TEXT NOT NULL, created_at INTEGER NOT NULL, visitor TEXT)',
+  ).run();
+  try {
+    // Tables created before the cooldown existed have no visitor column.
+    await env.DB.prepare('ALTER TABLE drawings ADD COLUMN visitor TEXT').run();
+  } catch {
+    /* already there */
+  }
+  drawingsReady = true;
+}
+
+// Only accepts a PNG whose header says it is exactly the canvas size, so the endpoint
+// can't be used to store arbitrary pictures.
+function isCanvasPng(base64: string) {
+  try {
+    const head = Uint8Array.from(atob(base64.slice(0, 32)), (ch) => ch.charCodeAt(0));
+    const view = new DataView(head.buffer);
+    return view.getUint32(0) === 0x89504e47 && view.getUint32(16) === DRAWING_SIZE[0] && view.getUint32(20) === DRAWING_SIZE[1];
+  } catch {
+    return false;
+  }
+}
+
+// A stable id for the sender that doesn't store their IP address.
+const visitorId = async (req: Request, env: Env) =>
+  (await hmac(env.ADMIN_PASSWORD || 'drawings', req.headers.get('cf-connecting-ip') || 'unknown')).slice(0, 22);
 
 // Posts to the Discord webhook when one is configured. Never fails the request it belongs to.
 async function notify(env: Env, origin: string, title: string, fields: [string, string][]) {
@@ -239,18 +271,30 @@ async function handle(req: Request, env: Env, ctx: ExecutionContext): Promise<Re
   }
   if (resource === 'drawings' && method === 'POST' && !id) {
     const m = typeof body.image === 'string' ? body.image.match(/^data:image\/png;base64,([A-Za-z0-9+/=]+)$/) : null;
-    if (!m || m[1].length > MAX_DRAWING_CHARS) return fail('The drawing must be a PNG under the size limit.');
+    if (!m || m[1].length > MAX_DRAWING_CHARS || !isCanvasPng(m[1])) return fail('The drawing must come from the paint window.');
     await ensureDrawings(env);
     const now = Date.now();
-    const count = await env.DB.prepare('SELECT COUNT(*) AS total, SUM(created_at > ?) AS recent FROM drawings')
+    const visitor = await visitorId(req, env);
+    const wait = (seconds: number) =>
+      new Response(JSON.stringify({ error: 'Too many drawings. Try again later.', retryAfter: seconds }), {
+        status: 429,
+        headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', 'retry-after': String(seconds) },
+      });
+
+    const mine = await env.DB.prepare('SELECT MAX(created_at) AS last, COUNT(*) AS today FROM drawings WHERE visitor = ? AND created_at > ?')
+      .bind(visitor, now - 24 * 3600 * 1000)
+      .first<{ last: number | null; today: number }>();
+    if (mine?.last && now - mine.last < COOLDOWN_MS) return wait(Math.ceil((COOLDOWN_MS - (now - mine.last)) / 1000));
+    if ((mine?.today ?? 0) >= MAX_PER_VISITOR_PER_DAY) return wait(3600);
+
+    const all = await env.DB.prepare('SELECT COUNT(*) AS total, SUM(created_at > ?) AS recent FROM drawings')
       .bind(now - 10 * 60 * 1000)
       .first<{ total: number; recent: number | null }>();
-    if ((count?.total ?? 0) >= MAX_DRAWINGS || (count?.recent ?? 0) >= MAX_DRAWINGS_PER_10_MIN) {
-      return fail('Too many drawings right now. Try again later.', 429);
-    }
+    if ((all?.total ?? 0) >= MAX_DRAWINGS || (all?.recent ?? 0) >= MAX_DRAWINGS_PER_10_MIN) return wait(600);
+
     const name = str(body.name, 40);
-    await env.DB.prepare('INSERT INTO drawings (id, name, image, created_at) VALUES (?, ?, ?, ?)')
-      .bind(`d-${crypto.randomUUID()}`, name, m[1], now)
+    await env.DB.prepare('INSERT INTO drawings (id, name, image, created_at, visitor) VALUES (?, ?, ?, ?, ?)')
+      .bind(`d-${crypto.randomUUID()}`, name, m[1], now, visitor)
       .run();
     ctx.waitUntil(notify(env, origin, `New drawing from ${name || 'a visitor'}`, []));
     return json({ ok: true }, 201);

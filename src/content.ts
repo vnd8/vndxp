@@ -83,6 +83,9 @@ const strings = {
     paintSent: 'Drawing sent. Thank you!',
     paintEmpty: 'Draw something first.',
     paintFailed: 'The drawing was not sent. Try again.',
+    paintWait: 'One drawing a minute. You can send again in',
+    paintLimit: 'You have sent enough drawings for today. Come back tomorrow.',
+    seconds: 's',
     top: 'Back to top',
   },
   ar: {
@@ -148,6 +151,9 @@ const strings = {
     paintSent: 'وصلتني رسمتك. شكراً!',
     paintEmpty: 'ارسم شي أول.',
     paintFailed: 'ما انرسلت الرسمة. جرب مرة ثانية.',
+    paintWait: 'رسمة وحدة كل دقيقة. تقدر ترسل بعد',
+    paintLimit: 'أرسلت رسمات كفاية اليوم. ارجع بكرة.',
+    seconds: 'ث',
     top: 'ارجع فوق',
   },
 };
