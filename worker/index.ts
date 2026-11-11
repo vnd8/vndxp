@@ -6,6 +6,8 @@ interface Env {
   ADMIN_PASSWORD: string;
   // Optional. A Discord channel webhook; new requests and drawings are announced there.
   DISCORD_WEBHOOK_URL?: string;
+  // Optional. A Discord user id to mention in those messages, so they ping.
+  DISCORD_MENTION_ID?: string;
 }
 
 const TOKEN_TTL_MS = 12 * 60 * 60 * 1000;
@@ -125,13 +127,15 @@ const ensureDrawings = (env: Env) =>
 // Posts to the Discord webhook when one is configured. Never fails the request it belongs to.
 async function notify(env: Env, origin: string, title: string, fields: [string, string][]) {
   if (!env.DISCORD_WEBHOOK_URL) return;
+  const mention = /^\d{5,25}$/.test(env.DISCORD_MENTION_ID || '') ? env.DISCORD_MENTION_ID : '';
   try {
     await fetch(env.DISCORD_WEBHOOK_URL, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
         username: 'vnd8.site',
-        allowed_mentions: { parse: [] },
+        content: mention ? `<@${mention}>` : undefined,
+        allowed_mentions: { parse: [], users: mention ? [mention] : [] },
         embeds: [
           {
             title,

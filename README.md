@@ -20,6 +20,7 @@ channel (channel settings, Integrations, Webhooks) and store its URL:
 
 ```bash
 npx wrangler secret put DISCORD_WEBHOOK_URL
+npx wrangler secret put DISCORD_MENTION_ID   # optional: your Discord user id, to get pinged
 ```
 
 After that, pushing to GitHub redeploys through Workers Builds (build command `npm run build`,
