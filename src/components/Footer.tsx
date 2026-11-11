@@ -1,15 +1,16 @@
-import { PROFILE } from '../content';
+import { PROFILE, t } from '../content';
+import type { Lang } from '../types';
 
-export function Footer() {
+// Bottom padding keeps the last line clear of the fixed timeline.
+export function Footer({ lang }: { lang: Lang }) {
   return (
-    <footer className="relative overflow-hidden border-t border-line">
-      <p className="display outline-text pointer-events-none text-center text-[clamp(4rem,22vw,20rem)] leading-[0.85] select-none" dir="ltr" aria-hidden>
-        @VND8D
-      </p>
-      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 pb-8 text-sm text-ash sm:px-8" dir="ltr">
-        <span>© {new Date().getFullYear()} Anes {PROFILE.handle}</span>
-        <a href="#" className="hover:text-bone">
-          ↑ Top
+    <footer className="border-t-2 border-line pb-(--dock)">
+      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-5 py-8 text-sm text-ash sm:px-8">
+        <span dir="ltr">
+          © {new Date().getFullYear()} Anes {PROFILE.handle}
+        </span>
+        <a href="#top" className="hover:text-bone">
+          {t(lang).top}
         </a>
       </div>
     </footer>

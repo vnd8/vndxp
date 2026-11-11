@@ -1,11 +1,9 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { api } from './api';
 import type { Credit, Lang, Work } from './types';
-import { AgentCursors, CursorTrail, reduced } from './fx';
-import { Header } from './components/Header';
-import { BUILD_END, Hero } from './components/Hero';
-import { Marquee } from './components/Marquee';
-import { WorkSection } from './components/WorkSection';
+import { Dock } from './components/Dock';
+import { Hero } from './components/Hero';
+import { Player, WorkSection } from './components/WorkSection';
 import { CreditsSection } from './components/CreditsSection';
 import { Process } from './components/Process';
 import { BookSection } from './components/BookSection';
@@ -27,15 +25,8 @@ export default function App() {
   const [lang, setLang] = useState<Lang>(initialLang);
   const [works, setWorks] = useState<Work[] | null>(null);
   const [credits, setCredits] = useState<Credit[]>([]);
+  const [playing, setPlaying] = useState<Work | null>(null);
   const isAdmin = location.pathname.startsWith('/admin');
-  // The hero and the strip build together once on load; the cursors follow the same clock.
-  const [build, setBuild] = useState<'run' | 'done'>(() => (reduced() ? 'done' : 'run'));
-
-  useEffect(() => {
-    if (build !== 'run') return;
-    const id = setTimeout(() => setBuild('done'), (BUILD_END + 0.6) * 1000);
-    return () => clearTimeout(id);
-  }, [build]);
 
   useEffect(() => {
     if (isAdmin) return;
@@ -63,19 +54,23 @@ export default function App() {
   }
 
   return (
-    <div className="grain">
-      <CursorTrail />
-      <AgentCursors run={build === 'run'} />
-      <Header lang={lang} onToggleLang={() => setLang(lang === 'ar' ? 'en' : 'ar')} />
+    <>
       <main className="overflow-x-clip">
-        <Hero lang={lang} build={build} />
-        <Marquee lang={lang} build={build} />
-        <WorkSection lang={lang} works={works} />
+        <Hero
+          lang={lang}
+          works={works}
+          paused={playing !== null}
+          onPlay={setPlaying}
+          onToggleLang={() => setLang(lang === 'ar' ? 'en' : 'ar')}
+        />
         {credits.length > 0 && <CreditsSection lang={lang} credits={credits} />}
+        <WorkSection lang={lang} works={works} onPlay={setPlaying} />
         <Process lang={lang} />
         <BookSection lang={lang} />
       </main>
-      <Footer />
-    </div>
+      <Footer lang={lang} />
+      <Dock lang={lang} hasCredits={credits.length > 0} />
+      {playing && <Player work={playing} lang={lang} onClose={() => setPlaying(null)} />}
+    </>
   );
 }

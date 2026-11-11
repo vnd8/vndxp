@@ -1,20 +1,29 @@
 @import "tailwindcss";
 
-/* Palette comes from the skull character: maroon outline, flame gold, bone skull, hoodie purple. */
+/* Palette comes from the skull character: hoodie purple ground, flame gold, bone skull, maroon outline. */
 @theme {
-  --color-ink: #0c0a0e;
-  --color-coal: #16131a;
-  --color-line: #2c2730;
-  --color-bone: #f6f1ea;
-  --color-ash: #8f8794;
+  --color-ink: #171226;
+  --color-coal: #221a38;
+  --color-line: #3b3160;
+  --color-bone: #f7efe1;
+  --color-ash: #aaa2c4;
   --color-blood: #952f3c;
   --color-ember: #e5433a;
   --color-flame: #fbc344;
   --color-hood: #5b4b8a;
+  --color-wine: #3d0f17;
 
-  --font-sans: 'Archivo', 'IBM Plex Sans Arabic', system-ui, sans-serif;
-  --font-display: 'Anton', 'Cairo', Impact, sans-serif;
-  --font-script: 'Caveat Brush', 'Cairo', cursive;
+  --font-sans: 'Readex Pro', system-ui, sans-serif;
+  --font-display: 'Lalezar', 'Readex Pro', system-ui, sans-serif;
+}
+
+:root {
+  --dock: 60px;
+}
+@media (min-width: 640px) {
+  :root {
+    --dock: 68px;
+  }
 }
 
 @layer base {
@@ -23,17 +32,16 @@
     color: var(--color-bone);
     -webkit-font-smoothing: antialiased;
     scroll-behavior: smooth;
-  }
-  html[lang='ar'] body {
-    font-family: 'IBM Plex Sans Arabic', 'Archivo', system-ui, sans-serif;
+    scroll-padding-top: 1.5rem;
   }
   body {
     font-family: var(--font-sans);
-    line-height: 1.55;
+    font-weight: 300;
+    line-height: 1.6;
     overflow-x: hidden;
   }
   ::selection {
-    background: var(--color-ember);
+    background: var(--color-flame);
     color: var(--color-ink);
   }
   :focus-visible {
@@ -47,65 +55,66 @@
   }
 }
 
-/* Display type: Anton for Latin, Cairo Black for Arabic. */
+/* Lalezar has one weight. Arabic needs more room for its ascenders and dots. */
 .display {
   font-family: var(--font-display);
   font-weight: 400;
-  line-height: 0.9;
-  text-transform: uppercase;
+  line-height: 1;
 }
 html[lang='ar'] .display:not([dir='ltr']) {
-  font-family: 'Cairo', sans-serif;
-  font-weight: 900;
-  line-height: 1.15;
+  line-height: 1.22;
 }
-.script {
-  font-family: var(--font-script);
-}
-html[lang='ar'] .script {
-  font-family: 'Cairo', sans-serif;
-  font-weight: 700;
+.tc {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
 }
 
-/* The gradient only paints inside the box, and Arabic descenders (ج، ي) fall below it,
-   so the box is extended downward and pulled back with a negative margin. */
-.ember-text {
-  display: inline-block;
-  padding-bottom: 0.32em;
-  margin-bottom: -0.32em;
-  background: linear-gradient(180deg, #ff5a45 0%, var(--color-ember) 35%, var(--color-blood) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+/* Sticker look from the character art: flat fill, maroon outline, hard offset shadow. */
+.sticker {
+  border: 3px solid var(--color-blood);
+  box-shadow: 5px 5px 0 var(--color-blood);
 }
-
-.outline-text {
-  color: transparent;
-  -webkit-text-stroke: 1.5px var(--color-line);
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  border-radius: 999px;
+  padding: 0.8rem 1.5rem;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s, background-color 0.15s, color 0.15s, border-color 0.15s;
 }
-
-/* Halftone dots, like the print texture in the character art. */
-.halftone {
-  background-image: radial-gradient(rgba(229, 67, 58, 0.22) 1px, transparent 1.6px);
-  background-size: 14px 14px;
-  mask-image: radial-gradient(ellipse at 70% 40%, #000 0%, transparent 65%);
+.btn-flame {
+  background: var(--color-flame);
+  color: var(--color-wine);
+  border: 3px solid var(--color-blood);
+  box-shadow: 4px 4px 0 var(--color-blood);
 }
-
-.grain::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 60;
-  opacity: 0.06;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+.btn-flame:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--color-blood);
+}
+.btn-flame:active {
+  transform: translate(3px, 3px);
+  box-shadow: 1px 1px 0 var(--color-blood);
+}
+.btn-ghost {
+  border: 2px solid var(--color-line);
+  color: var(--color-bone);
+}
+.btn-ghost:hover {
+  border-color: var(--color-bone);
+  background: var(--color-bone);
+  color: var(--color-ink);
 }
 
 .field {
   width: 100%;
   background: transparent;
   border: 0;
-  border-bottom: 1px solid var(--color-line);
+  border-bottom: 2px solid var(--color-line);
   padding: 0.7rem 0;
   color: var(--color-bone);
   border-radius: 0;
@@ -113,123 +122,81 @@ html[lang='ar'] .script {
 }
 .field:focus {
   outline: none;
-  border-bottom-color: var(--color-ember);
+  border-bottom-color: var(--color-flame);
 }
 .field::placeholder {
   color: var(--color-ash);
-  opacity: 0.55;
+  opacity: 0.6;
 }
 select.field option {
   background: var(--color-coal);
 }
 
-/* ---------- motion ---------- */
-
-.marquee-track {
-  display: flex;
-  width: max-content;
-  animation: marquee 28s linear infinite;
-}
-html[dir='rtl'] .marquee-track {
-  animation-direction: reverse;
-}
-@keyframes marquee {
-  to {
-    transform: translateX(-50%);
-  }
+/* Ruler ticks, like the top of an editing timeline. */
+.ruler {
+  background-image:
+    repeating-linear-gradient(90deg, var(--color-ash) 0 1px, transparent 1px 60px),
+    repeating-linear-gradient(90deg, var(--color-hood) 0 1px, transparent 1px 12px);
+  background-size: auto 100%, auto 50%;
+  background-repeat: repeat-x;
+  background-position: left bottom;
 }
 
-.float {
-  animation: float 6s ease-in-out infinite;
-}
-@keyframes float {
-  50% {
-    transform: translateY(-14px) rotate(-1.5deg);
-  }
-}
+/* ---------- motion: one load sequence, and the monitor's cuts ---------- */
 
-.spin-slow {
-  animation: spin 18s linear infinite;
-}
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Lines rise out of a mask when their section scrolls in. */
-.rise {
-  display: block;
-  overflow: hidden;
-}
-.rise > span {
-  display: block;
-  transform: translateY(105%);
-  transition: transform 0.9s cubic-bezier(0.2, 0.8, 0.1, 1);
-}
-.in-view .rise > span {
-  transform: none;
-}
-.in-view .rise:nth-child(2) > span {
-  transition-delay: 0.08s;
-}
-.fade-up {
-  opacity: 0;
-  transform: translateY(24px);
-  transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.2, 0.8, 0.1, 1);
-  transition-delay: var(--d, 0s);
-}
-.in-view .fade-up,
-.in-view.fade-up {
-  opacity: 1;
-  transform: none;
-}
-
-/* Intro: the skull pops with a wobble, then the curtain splits. */
-.intro-skull {
-  animation: pop 0.9s cubic-bezier(0.3, 1.4, 0.5, 1) both;
-}
-@keyframes pop {
-  0% {
-    transform: scale(0) rotate(-45deg);
-  }
-  55% {
-    transform: scale(1.08) rotate(6deg);
-  }
-  75% {
-    transform: scale(0.97) rotate(-4deg);
-  }
-  100% {
-    transform: scale(1) rotate(0);
-  }
-}
-.intro-half {
-  transition: transform 0.8s cubic-bezier(0.7, 0, 0.2, 1);
-}
-.intro-done .intro-top {
-  transform: translateY(-100%);
-}
-.intro-done .intro-bottom {
-  transform: translateY(100%);
-}
-.intro-done .intro-skull {
-  transition: opacity 0.25s, transform 0.4s;
-  opacity: 0;
-  transform: scale(1.4);
-}
-
-.hero-in {
-  animation: hero-in 1.1s cubic-bezier(0.2, 0.8, 0.1, 1) both;
+.cut-in {
+  animation: cut-in 0.55s cubic-bezier(0.2, 0.9, 0.2, 1) both;
   animation-delay: var(--d, 0s);
 }
-@keyframes hero-in {
+@keyframes cut-in {
   from {
     opacity: 0;
-    transform: translateY(60px) scale(0.96);
+    transform: translateY(0.45em);
+  }
+}
+.monitor-in {
+  animation: monitor-in 0.8s 0.25s cubic-bezier(0.25, 1.4, 0.4, 1) both;
+}
+@keyframes monitor-in {
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.92);
+  }
+}
+
+/* Each new frame in the monitor lands like a hard cut with a punch-in. */
+.cut {
+  animation: cut 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes cut {
+  from {
+    transform: scale(1.14);
+    filter: brightness(1.7) saturate(1.3);
+  }
+}
+.seg-fill {
+  transform-origin: left;
+  animation: seg linear both;
+}
+@keyframes seg {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+.bob {
+  animation: bob 5s ease-in-out infinite;
+}
+@keyframes bob {
+  50% {
+    transform: translateY(-8px) rotate(-3deg);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
   *,
   *::before,
   *::after {
@@ -237,210 +204,4 @@ html[dir='rtl'] .marquee-track {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-  .rise > span,
-  .fade-up {
-    transform: none;
-    opacity: 1;
-  }
-}
-
-/* ---------- v3: "the page builds itself" ---------- */
-
-/* Descenders (Arabic ج، ي and Latin g, y) were clipped by the rise mask. */
-.rise {
-  padding-bottom: 0.14em;
-  margin-bottom: -0.14em;
-}
-html[lang='ar'] .rise {
-  padding-bottom: 0.45em;
-  margin-bottom: -0.45em;
-}
-
-:root {
-  --bp: #3b8bff;
-}
-
-/* Blueprint guide lines that draw across the hero, then fade. */
-.bp-line {
-  position: absolute;
-  background: var(--bp);
-  opacity: 0;
-  pointer-events: none;
-}
-.bp-line.h {
-  height: 1px;
-  inset-inline: 0;
-  transform-origin: left;
-}
-.bp-line.v {
-  width: 1px;
-  inset-block: 0;
-  transform-origin: top;
-}
-.build-run .bp-line.h {
-  animation: bp-draw-h 2.9s var(--b, 0s) cubic-bezier(0.6, 0, 0.2, 1) both;
-}
-.build-run .bp-line.v {
-  animation: bp-draw-v 2.9s var(--b, 0s) cubic-bezier(0.6, 0, 0.2, 1) both;
-}
-@keyframes bp-draw-h {
-  0% { opacity: 0.7; transform: scaleX(0); }
-  20% { opacity: 0.55; transform: scaleX(1); }
-  80% { opacity: 0.35; transform: scaleX(1); }
-  100% { opacity: 0; transform: scaleX(1); }
-}
-@keyframes bp-draw-v {
-  0% { opacity: 0.7; transform: scaleY(0); }
-  20% { opacity: 0.55; transform: scaleY(1); }
-  80% { opacity: 0.35; transform: scaleY(1); }
-  100% { opacity: 0; transform: scaleY(1); }
-}
-
-/* Selection box with corner handles and a tag, like a design tool. */
-.bp-box {
-  position: relative;
-  display: block;
-}
-.bp-outline {
-  position: absolute;
-  inset: -6px;
-  border: 1.5px solid var(--bp);
-  pointer-events: none;
-  opacity: 0;
-  z-index: 5;
-}
-.bp-outline > i {
-  position: absolute;
-  width: 7px;
-  height: 7px;
-  background: #fff;
-  border: 1.5px solid var(--bp);
-}
-.bp-outline > i:nth-child(1) { top: -4px; left: -4px; }
-.bp-outline > i:nth-child(2) { top: -4px; right: -4px; }
-.bp-outline > i:nth-child(3) { bottom: -4px; left: -4px; }
-.bp-outline > i:nth-child(4) { bottom: -4px; right: -4px; }
-.bp-outline > b {
-  position: absolute;
-  top: -22px;
-  inset-inline-start: -1px;
-  background: var(--bp);
-  color: #fff;
-  font: 600 10px/1 'Archivo', sans-serif;
-  padding: 4px 6px;
-  white-space: nowrap;
-  direction: ltr;
-}
-.bp-fill {
-  position: absolute;
-  inset: 0;
-  background: #2a2d36;
-  opacity: 0;
-  pointer-events: none;
-}
-.build-run .bp-outline,
-.in-view .bp-outline {
-  animation: bp-box var(--bd, 1.6s) var(--b, 0s) both;
-}
-.build-run .bp-fill,
-.in-view .bp-fill {
-  animation: bp-fill var(--fd, 1s) var(--b, 0s) both;
-}
-@keyframes bp-box {
-  0% { opacity: 0; clip-path: inset(0 100% 100% 0); }
-  12% { opacity: 1; clip-path: inset(-30px -10px -10px -10px); }
-  82% { opacity: 1; clip-path: inset(-30px -10px -10px -10px); }
-  100% { opacity: 0; clip-path: inset(-30px -10px -10px -10px); }
-}
-@keyframes bp-fill {
-  0% { opacity: 1; clip-path: inset(0 100% 0 0); }
-  30% { opacity: 1; clip-path: inset(0 0 0 0); }
-  75% { opacity: 1; }
-  100% { opacity: 0; }
-}
-
-/* Content arrives after its box. */
-.build-run .pop-in,
-.in-view .pop-in {
-  animation: pop-in 0.7s var(--c, 0s) cubic-bezier(0.25, 1.35, 0.4, 1) both;
-}
-@keyframes pop-in {
-  0% { opacity: 0; transform: translateY(18px) scale(0.94); }
-  100% { opacity: 1; transform: none; }
-}
-.build-run .letter {
-  display: inline-block;
-  animation: letter 0.65s var(--c, 0s) cubic-bezier(0.25, 1.4, 0.4, 1) both;
-}
-@keyframes letter {
-  0% { opacity: 0; transform: translateY(-0.6em) rotate(-8deg); }
-  100% { opacity: 1; transform: none; }
-}
-.pop-in,
-.letter {
-  opacity: 0;
-}
-.build-done .pop-in,
-.build-done .letter {
-  opacity: 1;
-}
-
-/* Typing caret for "Hello, I'm". */
-.typed {
-  display: inline-block;
-  overflow: hidden;
-  white-space: nowrap;
-  vertical-align: bottom;
-}
-.build-run .typed {
-  animation: type 0.7s var(--c, 0s) steps(12) both;
-}
-@keyframes type {
-  from { max-width: 0; }
-  to { max-width: 12ch; }
-}
-
-/* Agent cursors */
-.agent {
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 55;
-  pointer-events: none;
-  will-change: transform;
-}
-.agent-tag {
-  position: absolute;
-  top: 18px;
-  left: 14px;
-  padding: 3px 7px;
-  border-radius: 4px 10px 10px 10px;
-  font: 700 11px/1.2 'Archivo', sans-serif;
-  white-space: nowrap;
-  direction: ltr;
-}
-.agent-click {
-  position: absolute;
-  top: -10px;
-  left: -10px;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  border: 2px solid currentColor;
-  animation: click 0.5s ease-out forwards;
-}
-@keyframes click {
-  from { transform: scale(0.3); opacity: 1; }
-  to { transform: scale(1.8); opacity: 0; }
-}
-
-/* Software tiles in the Adobe style. */
-.app-tile {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 14px;
-  border: 2px solid currentColor;
-  font: 700 1.6rem/1 'Archivo', sans-serif;
-  direction: ltr;
 }

@@ -1,64 +1,60 @@
 import { t, TOOLS } from '../content';
-import { InView, Outline, Title } from '../fx';
 import type { Lang } from '../types';
 
-// The four steps really are a sequence, so they are numbered.
+// The four steps are a real sequence, so they sit on four tracks, each clip starting
+// where the one above it hands over, the way a finished edit stacks up in a timeline.
+const CLIP = ['bg-hood text-bone', 'bg-blood text-bone', 'bg-flame text-wine', 'bg-bone text-ink'];
+const START = ['lg:ms-0', 'lg:ms-[17%]', 'lg:ms-[34%]', 'lg:ms-[51%]'];
+
 export function Process({ lang }: { lang: Lang }) {
   const s = t(lang);
   return (
-    <InView as="section" id="process" className="relative scroll-mt-20 overflow-hidden bg-coal py-24">
-      <div className="halftone absolute inset-0 opacity-60" />
-      <div className="relative mx-auto max-w-7xl px-4 sm:px-8">
-        <Title tag={s.processTag} lines={s.processTitle} />
-        <ol className="mt-14 grid gap-px overflow-hidden bg-line sm:grid-cols-2 lg:grid-cols-4">
-          {s.steps.map((st, i) => (
-            <li
-              key={st.t}
-              className="fade-up group relative bg-coal p-7 transition-colors duration-300 hover:bg-blood"
-              style={{ ['--d' as string]: `${i * 0.1}s` }}
-            >
-              <span className="display text-7xl text-ember transition-colors group-hover:text-flame" dir="ltr">
-                {i + 1}
-              </span>
-              <h3 className="mt-6 text-xl font-bold">{st.t}</h3>
-              <p className="mt-2 text-ash group-hover:text-bone/80">{st.d}</p>
-            </li>
-          ))}
-        </ol>
+    <section id="process" className="border-y-2 border-line bg-coal py-24">
+      <div className="mx-auto max-w-7xl px-5 sm:px-8">
+        <h2 className="display text-[clamp(3rem,8vw,6rem)]">{s.processTitle}</h2>
+        <p className="mt-2 text-ash">{s.processLede}</p>
 
-        <h3 className="display mt-20 text-3xl sm:text-4xl">{s.toolsTitle}</h3>
-        <ul className="mt-8 grid grid-cols-4 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
-          {TOOLS.map((tool, i) => (
-            <li
-              key={tool.short}
-              className="bp-box"
-              style={{ ['--b' as string]: `${0.3 + i * 0.12}s`, ['--c' as string]: `${0.75 + i * 0.12}s`, ['--bd' as string]: '1.4s' }}
-            >
-              <Outline label={`app.${tool.short.toLowerCase()}`} />
-              <div
-                className={`pop-in group flex items-center justify-center gap-4 border border-line bg-ink/60 p-3 sm:justify-start sm:p-4 transition-transform duration-300 hover:-translate-y-1 ${
-                  tool.light ? 'opacity-80' : ''
-                }`}
+        <div className="mt-12 overflow-hidden rounded-3xl border-2 border-line bg-ink">
+          <div className="ruler h-4 border-b-2 border-line opacity-70" aria-hidden />
+          <ol>
+            {s.steps.map((st, i) => (
+              <li key={st.t} className="flex items-stretch border-b-2 border-line last:border-b-0">
+                <span className="display flex w-12 shrink-0 items-center justify-center border-e-2 border-line text-3xl text-ash sm:w-16" dir="ltr">
+                  {i + 1}
+                </span>
+                <div className="min-w-0 flex-1 p-2 sm:p-2.5">
+                  <div className={`rounded-xl px-5 py-4 lg:w-[49%] ${CLIP[i]} ${START[i]}`}>
+                    <h3 className="display text-2xl sm:text-3xl">{st.t}</h3>
+                    <p className="mt-1 font-normal opacity-85">{st.d}</p>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+
+        <h3 className="display mt-20 text-4xl sm:text-5xl">{s.toolsTitle}</h3>
+        <ul className="mt-7 grid grid-cols-2 gap-4 lg:grid-cols-4">
+          {TOOLS.map((tool) => (
+            <li key={tool.short} className="flex items-center gap-4 rounded-2xl border-2 border-line bg-ink p-3 sm:p-4">
+              <span
+                className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border-2 border-current text-2xl font-bold sm:h-16 sm:w-16"
+                style={{ color: tool.color, background: tool.bg }}
+                dir="ltr"
+                aria-hidden
               >
-                <span
-                  title={tool.name}
-                  className="app-tile h-14 w-14 shrink-0 sm:h-16 sm:w-16 transition-transform duration-300 group-hover:-rotate-6"
-                  style={{ color: tool.color, background: tool.bg }}
-                >
-                  {tool.short}
+                {tool.short}
+              </span>
+              <span className="min-w-0">
+                <span className="block font-medium" dir="ltr">
+                  {tool.name}
                 </span>
-                {/* names only where there is room; on phones the icons stand alone */}
-                <span className="hidden min-w-0 sm:block">
-                  <span className="block font-bold" dir="ltr">
-                    {tool.name}
-                  </span>
-                  <span className="text-sm text-ash">{tool.light ? s.tools.light : s.tools.main}</span>
-                </span>
-              </div>
+                <span className="text-sm text-ash">{tool.light ? s.tools.light : s.tools.main}</span>
+              </span>
             </li>
           ))}
         </ul>
       </div>
-    </InView>
+    </section>
   );
 }

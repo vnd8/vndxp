@@ -4,6 +4,7 @@ export interface VideoInfo {
   platform: Platform;
   embedUrl: string;
   thumbnailUrl?: string;
+  posterUrl?: string;
   vertical: boolean;
 }
 
@@ -26,7 +27,8 @@ export function resolveVideo(url: string, thumbnailUrl?: string): VideoInfo {
     return {
       platform: 'youtube',
       embedUrl: `https://www.youtube-nocookie.com/embed/${yt[1]}?autoplay=1&rel=0`,
-      thumbnailUrl: thumbnailUrl || `https://img.youtube.com/vi/${yt[1]}/hqdefault.jpg`,
+      thumbnailUrl: thumbnailUrl || `https://i.ytimg.com/vi/${yt[1]}/hqdefault.jpg`,
+      posterUrl: thumbnailUrl || `https://i.ytimg.com/vi/${yt[1]}/maxresdefault.jpg`,
       vertical: /\/shorts\//i.test(u),
     };
   }

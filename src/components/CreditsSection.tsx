@@ -1,55 +1,47 @@
 import { t } from '../content';
-import { InView, Title } from '../fx';
 import type { Credit, Lang } from '../types';
 
+// Proof sits right under the hero: the creators whose channels the edits run on.
 export function CreditsSection({ lang, credits }: { lang: Lang; credits: Credit[] }) {
   const s = t(lang);
   return (
-    <InView as="section" id="credits" className="mx-auto max-w-7xl scroll-mt-20 px-4 py-20 sm:px-8">
-      <div className="grid gap-10 lg:grid-cols-[1fr_1.6fr]">
-        <div>
-          <Title tag={s.creditsTag} lines={s.creditsTitle} />
-        </div>
-        <ul className="self-end border-t border-line">
-          {credits.map((c, i) => {
+    <section id="credits" className="border-y-2 border-line bg-coal">
+      <div className="mx-auto flex max-w-7xl flex-col gap-x-12 gap-y-6 px-5 py-10 sm:px-8 lg:flex-row lg:items-center">
+        <h2 className="display shrink-0 text-3xl text-flame sm:text-4xl">{s.creditsTitle}</h2>
+        <ul className="flex flex-1 flex-wrap gap-x-10 gap-y-6">
+          {credits.map((c) => {
             const role = (lang === 'ar' && c.roleAr) || c.roleEn;
-            const Inner = (
+            const inner = (
               <>
-                <span className="display w-10 text-lg text-ash transition-colors group-hover:text-ink" dir="ltr">
-                  {String(i + 1).padStart(2, '0')}
+                <span className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full border-[3px] border-blood bg-bone transition-transform duration-200 group-hover:-rotate-6 group-hover:scale-110">
+                  {c.logoUrl ? (
+                    <img src={c.logoUrl} alt="" loading="lazy" className="h-full w-full object-cover" />
+                  ) : (
+                    <span className="display text-2xl text-blood">{c.name.slice(0, 1)}</span>
+                  )}
                 </span>
-                {c.logoUrl && (
-                  <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-bone ring-2 ring-line transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-110 group-hover:ring-ink sm:h-20 sm:w-20">
-                    <img src={c.logoUrl} alt="" loading="lazy" className="h-full w-full object-contain" />
+                <span className="min-w-0">
+                  <span className="display block text-2xl sm:text-3xl" dir="auto">
+                    {c.name}
                   </span>
-                )}
-                <span className="display min-w-0 flex-1 text-4xl transition-transform duration-300 group-hover:translate-x-2 sm:text-6xl rtl:group-hover:-translate-x-2">
-                  {c.name}
+                  {role && <span className="block text-sm text-ash">{role}</span>}
                 </span>
-                {role && <span className="text-sm text-ash transition-colors group-hover:text-ink">{role}</span>}
-                {c.url && (
-                  <span aria-hidden className="text-2xl transition-transform group-hover:-translate-y-1 group-hover:translate-x-1 rtl:-scale-x-100">
-                    ↗
-                  </span>
-                )}
               </>
             );
-            const cls =
-              'group relative flex items-center gap-5 border-b border-line px-3 py-6 transition-colors duration-300 hover:bg-ember hover:text-ink';
             return (
-              <li key={c.id} style={{ ['--d' as string]: `${i * 0.06}s` }} className="fade-up">
+              <li key={c.id}>
                 {c.url ? (
-                  <a href={c.url} target="_blank" rel="noopener noreferrer" className={cls}>
-                    {Inner}
+                  <a href={c.url} target="_blank" rel="noopener noreferrer" className="group flex items-center gap-4 transition-colors hover:text-flame">
+                    {inner}
                   </a>
                 ) : (
-                  <div className={cls}>{Inner}</div>
+                  <div className="group flex items-center gap-4">{inner}</div>
                 )}
               </li>
             );
           })}
         </ul>
       </div>
-    </InView>
+    </section>
   );
 }
