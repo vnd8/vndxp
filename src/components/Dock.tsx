@@ -6,11 +6,12 @@ import { WhatsAppIcon } from './BrandIcons';
 // The page as an editing timeline: each section is a clip, scrolling moves the playhead,
 // and pressing a clip jumps to it. Timelines read left to right in every language.
 const CLIPS = [
-  { id: 'top', key: 'intro', grow: 1.1, on: 'bg-hood text-bone', off: 'bg-hood/30' },
-  { id: 'credits', key: 'credits', grow: 1.15, on: 'bg-blood text-bone', off: 'bg-blood/35' },
-  { id: 'work', key: 'work', grow: 1.7, on: 'bg-flame text-wine', off: 'bg-flame/25' },
-  { id: 'process', key: 'process', grow: 1.2, on: 'bg-hood text-bone', off: 'bg-hood/30' },
-  { id: 'contact', key: 'contact', grow: 1.2, on: 'bg-blood text-bone', off: 'bg-blood/35' },
+  { id: 'top', key: 'intro', grow: 1, on: 'bg-hood text-bone', off: 'bg-hood/30' },
+  { id: 'work', key: 'work', grow: 1.4, on: 'bg-flame text-wine', off: 'bg-flame/25' },
+  { id: 'credits', key: 'credits', grow: 1.1, on: 'bg-blood text-bone', off: 'bg-blood/35' },
+  { id: 'process', key: 'process', grow: 1.1, on: 'bg-hood text-bone', off: 'bg-hood/30' },
+  { id: 'contact', key: 'contact', grow: 1.1, on: 'bg-flame text-wine', off: 'bg-flame/25' },
+  { id: 'paint', key: 'paint', grow: 0.9, on: 'bg-blood text-bone', off: 'bg-blood/35' },
 ] as const;
 
 const FPS = 24;
@@ -35,7 +36,8 @@ export function Dock({ lang, hasCredits }: { lang: Lang; hasCredits: boolean }) 
       raf = 0;
       const buttons = track.current?.querySelectorAll<HTMLElement>('[data-clip]');
       if (!buttons) return;
-      const probe = innerHeight * 0.4;
+      // A jump lands a section's top near the top of the screen, so the probe sits just below it.
+      const probe = Math.min(innerHeight * 0.3, 220);
       let index = 0;
       let within = 0;
       buttons.forEach((b, i) => {
@@ -85,7 +87,7 @@ export function Dock({ lang, hasCredits }: { lang: Lang; hasCredits: boolean }) 
 
       <div ref={track} className="relative flex min-w-0 flex-1 flex-col">
         <div className="ruler h-2.5 shrink-0 opacity-70" aria-hidden />
-        <div className="flex flex-1 items-stretch gap-1 py-1.5">
+        <div className="flex flex-1 items-stretch gap-0.5 py-1.5 sm:gap-1">
           {clips.map((c, i) => (
             <a
               key={c.id}
@@ -93,7 +95,7 @@ export function Dock({ lang, hasCredits }: { lang: Lang; hasCredits: boolean }) 
               data-clip={c.id}
               aria-current={i === active ? 'true' : undefined}
               style={{ flexGrow: c.grow }}
-              className={`flex min-w-0 basis-0 items-center rounded-md px-1.5 text-[11px] font-medium transition-colors sm:px-3 sm:text-sm ${
+              className={`flex min-w-0 basis-0 items-center rounded-md px-1 text-[10px] font-medium transition-colors sm:px-3 sm:text-sm ${
                 i === active ? c.on : `${c.off} text-bone/75 hover:text-bone`
               }`}
             >

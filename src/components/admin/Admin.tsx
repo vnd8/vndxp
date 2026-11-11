@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState, type ChangeEvent, type FormEvent, type ReactNode } from 'react';
 import { api, ApiError, getToken, setToken } from '../../api';
-import type { Credit, Inquiry, Work } from '../../types';
+import type { Credit, Drawing, Inquiry, Work } from '../../types';
 import { platformName, resolveVideo } from '../../video';
 
-type Tab = 'works' | 'credits' | 'inquiries';
+type Tab = 'works' | 'credits' | 'inquiries' | 'drawings';
 
 export default function Admin() {
   const [signedIn, setSignedIn] = useState(!!getToken());
@@ -25,6 +25,7 @@ export default function Admin() {
     ['works', 'المقاطع'],
     ['credits', 'الكريدت'],
     ['inquiries', 'الطلبات'],
+    ['drawings', 'الرسمات'],
   ];
 
   return (
@@ -55,6 +56,7 @@ export default function Admin() {
         {tab === 'works' && <WorksAdmin onAuthError={signOut} />}
         {tab === 'credits' && <CreditsAdmin onAuthError={signOut} />}
         {tab === 'inquiries' && <InquiriesAdmin onAuthError={signOut} />}
+        {tab === 'drawings' && <DrawingsAdmin onAuthError={signOut} />}
       </div>
     </div>
   );
@@ -415,6 +417,36 @@ function InquiriesAdmin({ onAuthError }: { onAuthError: () => void }) {
                 className={`${rowBtn} ms-auto`}
                 onClick={() => confirm('حذف الطلب؟') && mutate(`inquiries/${q.id}`, 'DELETE', undefined, 'تم الحذف.')}
               >
+                حذف
+              </button>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
+function DrawingsAdmin({ onAuthError }: { onAuthError: () => void }) {
+  const { items, msg, mutate } = useAdminList<Drawing>('drawings', onAuthError);
+
+  if (items.length === 0) return <p className="text-ash">ما فيه رسمات للحين.</p>;
+
+  return (
+    <>
+      {msg && <p className="mb-4 text-sm text-ash">{msg}</p>}
+      <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {items.map((d) => (
+          <li key={d.id}>
+            <a href={d.imageUrl} target="_blank" rel="noopener noreferrer" className="block overflow-hidden rounded-xl border-2 border-line bg-white hover:border-flame">
+              <img src={d.imageUrl} alt="" loading="lazy" className="block aspect-[8/5] w-full object-contain" />
+            </a>
+            <div className="mt-2 flex items-baseline gap-3">
+              <p className="min-w-0 flex-1 truncate font-medium" dir="auto">
+                {d.name || 'بدون اسم'}
+              </p>
+              <span className="text-sm text-ash">{new Date(d.createdAt).toLocaleDateString('ar')}</span>
+              <button className={rowBtn} onClick={() => confirm('حذف الرسمة؟') && mutate(`drawings/${d.id}`, 'DELETE', undefined, 'تم الحذف.')}>
                 حذف
               </button>
             </div>

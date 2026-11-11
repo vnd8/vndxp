@@ -9,10 +9,10 @@ const START = ['lg:ms-0', 'lg:ms-[17%]', 'lg:ms-[34%]', 'lg:ms-[51%]'];
 export function Process({ lang }: { lang: Lang }) {
   const s = t(lang);
   return (
-    <section id="process" className="border-y-2 border-line bg-coal py-24">
+    <section id="process" className="-mt-[3vw] border-b-2 border-line bg-coal pt-[calc(6rem+3vw)] pb-24">
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
-        <h2 className="display text-[clamp(3rem,8vw,6rem)]">{s.processTitle}</h2>
-        <p className="mt-2 text-ash">{s.processLede}</p>
+        <h2 className="display sticker-type text-[clamp(2.8rem,8vw,6rem)]">{s.processTitle}</h2>
+        <p className="mt-4 text-ash">{s.processLede}</p>
 
         <div className="mt-12 overflow-hidden rounded-3xl border-2 border-line bg-ink">
           <div className="ruler h-4 border-b-2 border-line opacity-70" aria-hidden />
@@ -33,7 +33,7 @@ export function Process({ lang }: { lang: Lang }) {
           </ol>
         </div>
 
-        <h3 className="display mt-20 text-4xl sm:text-5xl">{s.toolsTitle}</h3>
+        <h3 className="display mt-20 text-4xl text-flame sm:text-5xl">{s.toolsTitle}</h3>
         <ul className="mt-7 grid grid-cols-2 gap-4 lg:grid-cols-4">
           {TOOLS.map((tool) => (
             <li key={tool.short} className="flex items-center gap-4 rounded-2xl border-2 border-line bg-ink p-3 sm:p-4">

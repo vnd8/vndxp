@@ -6,8 +6,10 @@ import { platformName, resolveVideo } from '../video';
 
 const title = (w: Work, lang: Lang) => (lang === 'ar' && w.titleAr) || w.titleEn;
 
+const TILT = ['-rotate-1', 'rotate-[0.8deg]', 'rotate-[-0.6deg]', 'rotate-1'];
+
 const frame =
-  'relative overflow-hidden bg-coal border-2 border-line transition duration-200 group-hover:-translate-y-1 group-hover:border-blood group-hover:shadow-[6px_6px_0_var(--color-blood)] group-focus-visible:border-blood';
+  'relative overflow-hidden bg-coal border-2 border-line transition duration-200 group-hover:-translate-y-1 group-hover:rotate-0 group-hover:border-blood group-hover:shadow-[6px_6px_0_var(--color-blood)] group-focus-visible:border-blood';
 
 const PlayBadge = ({ big }: { big?: boolean }) => (
   <span
@@ -29,11 +31,11 @@ export function WorkSection({ lang, works, onPlay }: { lang: Lang; works: Work[]
   const reels = shown.filter((w) => resolveVideo(w.url).vertical);
 
   return (
-    <section id="work" className="mx-auto max-w-7xl px-5 pt-24 pb-20 sm:px-8">
+    <section id="work" className="mx-auto max-w-7xl px-5 pt-24 pb-28 sm:px-8">
       <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-6">
         <div>
-          <h2 className="display text-[clamp(3rem,8vw,6rem)]">{s.workTitle}</h2>
-          <p className="mt-2 max-w-[46ch] text-ash">{s.workLede}</p>
+          <h2 className="display sticker-type text-[clamp(3.2rem,9vw,7rem)]">{s.workTitle}</h2>
+          <p className="mt-4 max-w-[46ch] text-ash">{s.workLede}</p>
         </div>
         {categories.length > 1 && (
           <div className="flex flex-wrap gap-2 text-sm" role="group">
@@ -71,7 +73,7 @@ export function WorkSection({ lang, works, onPlay }: { lang: Lang; works: Work[]
             return (
               <li key={w.id} className={featured ? 'sm:col-span-2 lg:row-span-2' : ''}>
                 <button onClick={() => onPlay(w)} className="group block w-full cursor-pointer text-start" aria-label={`${s.play}: ${title(w, lang)}`}>
-                  <div className={`${frame} aspect-video rounded-2xl`}>
+                  <div className={`${frame} aspect-video rounded-2xl ${featured ? '' : TILT[i % 4]}`}>
                     <Cover work={w} sharp={featured} className="transition-transform duration-500 group-hover:scale-105" />
                     <span className="absolute start-3 top-3 rounded-full bg-ink/85 px-3 py-1 text-xs font-medium text-bone">{w.category}</span>
                     <PlayBadge big={featured} />
@@ -89,14 +91,14 @@ export function WorkSection({ lang, works, onPlay }: { lang: Lang; works: Work[]
 
       {reels.length > 0 && (
         <div className="mt-20">
-          <h3 className="display text-4xl sm:text-5xl">{s.reelsTitle}</h3>
+          <h3 className="display text-4xl text-flame sm:text-5xl">{s.reelsTitle}</h3>
           <ul className="-mx-5 mt-6 flex snap-x gap-5 overflow-x-auto px-5 pt-2 pb-4 sm:mx-0 sm:px-1">
-            {reels.map((w) => {
+            {reels.map((w, i) => {
               const v = resolveVideo(w.url, w.thumbnailUrl);
               return (
                 <li key={w.id} className="w-[220px] shrink-0 snap-start sm:w-[250px]">
                   <button onClick={() => onPlay(w)} className="group block w-full cursor-pointer text-start" aria-label={`${s.play}: ${title(w, lang)}`}>
-                    <div className={`${frame} aspect-[9/16] rounded-3xl`}>
+                    <div className={`${frame} aspect-[9/16] rounded-3xl ${TILT[i % 4]}`}>
                       <Cover work={w} className="transition-transform duration-500 group-hover:scale-105" />
                       <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-transparent to-transparent" />
                       <span className="absolute start-3 top-3 rounded-full bg-ink/85 px-3 py-1 text-xs font-medium text-bone">{platformName[v.platform]}</span>

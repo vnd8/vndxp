@@ -48,3 +48,18 @@ export const PlayIcon = ({ size = 16 }: { size?: number }) => (
     <path d="M3 1.2l9.5 5.8L3 12.8z" fill="currentColor" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
   </svg>
 );
+
+// The gold star from the character art.
+export function Star({ size = 32, className = '' }: { size?: number; className?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden className={className}>
+      <path
+        d="M12 2.2l2.8 6.1 6.7.8-5 4.6 1.4 6.6L12 17l-5.9 3.3 1.4-6.6-5-4.6 6.7-.8z"
+        fill="var(--color-flame)"
+        stroke="var(--color-blood)"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}

@@ -132,6 +132,29 @@ select.field option {
   background: var(--color-coal);
 }
 
+/* Headings drawn like the stickers: gold fill, thick maroon outline, hard shadow. */
+.sticker-type {
+  color: var(--color-flame);
+  -webkit-text-stroke: 0.14em var(--color-blood);
+  paint-order: stroke fill;
+  text-shadow: 0.07em 0.08em 0 var(--color-blood);
+  padding-inline: 0.07em;
+}
+
+/* Halftone dots, the print texture in the character art. */
+.halftone {
+  background-image: radial-gradient(rgba(247, 239, 225, 0.11) 1.2px, transparent 1.7px);
+  background-size: 16px 16px;
+}
+.halftone-fade {
+  mask-image: radial-gradient(ellipse at 25% 100%, #000 0%, transparent 60%);
+}
+
+/* A band cut on the slant, like a razor cut across the timeline. */
+.slant {
+  clip-path: polygon(0 3vw, 100% 0, 100% 100%, 0 calc(100% - 3vw));
+}
+
 /* Ruler ticks, like the top of an editing timeline. */
 .ruler {
   background-image:

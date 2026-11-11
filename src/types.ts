@@ -32,3 +32,10 @@ export interface Inquiry {
   notes: string;
   createdAt: number;
 }
+
+export interface Drawing {
+  id: string;
+  name: string;
+  imageUrl: string;
+  createdAt: number;
+}

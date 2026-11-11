@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { t } from '../content';
-import { Cover, PlayIcon, reduced } from '../fx';
+import { Cover, PlayIcon, reduced, Star } from '../fx';
 import type { Lang, Work } from '../types';
 import { resolveVideo } from '../video';
 
@@ -30,6 +30,9 @@ function Monitor({ lang, works, paused, onPlay }: { lang: Lang; works: Work[] | 
 
   return (
     <div className="monitor-in relative mx-auto w-full max-w-[640px]">
+      <Star size={46} className="bob absolute -start-7 top-[8%] z-10 [animation-delay:-2s]" />
+      <Star size={28} className="bob absolute start-[10%] -bottom-9 z-10 [animation-delay:-3.5s]" />
+      <Star size={22} className="bob absolute -end-3 bottom-[22%] z-10 [animation-delay:-1s]" />
       <div className="relative -rotate-2 rtl:rotate-2">
         <img
           src="/skull-logo.png"
@@ -126,6 +129,7 @@ export function Hero({
     <section id="top" className="relative flex min-h-[calc(100svh-var(--dock))] flex-col">
       {/* soft light behind the monitor, in the hoodie's purple */}
       <div aria-hidden className="pointer-events-none absolute end-0 top-0 -z-10 h-[90%] w-[70%] bg-[radial-gradient(closest-side,rgba(91,75,138,0.55),transparent)]" />
+      <div aria-hidden className="halftone halftone-fade pointer-events-none absolute inset-0 -z-10" />
 
       <header className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-5 pt-5 sm:px-8 sm:pt-7">
         <a href="#top" className="flex items-center gap-2.5" dir="ltr" aria-label="Anes">

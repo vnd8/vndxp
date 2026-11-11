@@ -7,6 +7,7 @@ import { Player, WorkSection } from './components/WorkSection';
 import { CreditsSection } from './components/CreditsSection';
 import { Process } from './components/Process';
 import { BookSection } from './components/BookSection';
+import { PaintSection } from './components/PaintSection';
 import { Footer } from './components/Footer';
 
 const Admin = lazy(() => import('./components/admin/Admin'));
@@ -18,7 +19,8 @@ function initialLang(): Lang {
   } catch {
     /* storage unavailable */
   }
-  return navigator.language.toLowerCase().startsWith('ar') ? 'ar' : 'en';
+  // English unless the visitor has switched to Arabic before.
+  return 'en';
 }
 
 export default function App() {
@@ -63,10 +65,11 @@ export default function App() {
           onPlay={setPlaying}
           onToggleLang={() => setLang(lang === 'ar' ? 'en' : 'ar')}
         />
-        {credits.length > 0 && <CreditsSection lang={lang} credits={credits} />}
         <WorkSection lang={lang} works={works} onPlay={setPlaying} />
+        {credits.length > 0 && <CreditsSection lang={lang} credits={credits} />}
         <Process lang={lang} />
         <BookSection lang={lang} />
+        <PaintSection lang={lang} />
       </main>
       <Footer lang={lang} />
       <Dock lang={lang} hasCredits={credits.length > 0} />

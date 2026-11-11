@@ -78,7 +78,7 @@
   <body>
     <script>
       try {
-        var l = localStorage.getItem('lang') || (navigator.language.toLowerCase().indexOf('ar') === 0 ? 'ar' : 'en');
+        var l = localStorage.getItem('lang') === 'ar' ? 'ar' : 'en';
         if (location.pathname.indexOf('/admin') === 0) l = 'ar';
         document.documentElement.lang = l;
         document.documentElement.dir = l === 'ar' ? 'rtl' : 'ltr';

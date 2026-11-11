@@ -4,6 +4,8 @@
 interface Env {
   DB: D1Database;
   ADMIN_PASSWORD: string;
+  // Optional. A Discord channel webhook; new requests and drawings are announced there.
+  DISCORD_WEBHOOK_URL?: string;
 }
 
 const TOKEN_TTL_MS = 12 * 60 * 60 * 1000;
@@ -104,6 +106,48 @@ const toInquiry = (r: Record<string, any>) => ({
   createdAt: r.created_at,
 });
 
+const toDrawing = (r: Record<string, any>) => ({
+  id: r.id,
+  name: r.name || '',
+  imageUrl: `/api/drawing/${r.id}`,
+  createdAt: r.created_at,
+});
+
+// Drawings arrive as PNG data URLs from the paint window's 640x400 canvas.
+const MAX_DRAWING_CHARS = 600_000;
+const MAX_DRAWINGS = 400;
+const MAX_DRAWINGS_PER_10_MIN = 15;
+
+// Created on first use so the feature works before the migration has been applied.
+const ensureDrawings = (env: Env) =>
+  env.DB.prepare('CREATE TABLE IF NOT EXISTS drawings (id TEXT PRIMARY KEY, name TEXT, image TEXT NOT NULL, created_at INTEGER NOT NULL)').run();
+
+// Posts to the Discord webhook when one is configured. Never fails the request it belongs to.
+async function notify(env: Env, origin: string, title: string, fields: [string, string][]) {
+  if (!env.DISCORD_WEBHOOK_URL) return;
+  try {
+    await fetch(env.DISCORD_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        username: 'vnd8.site',
+        allowed_mentions: { parse: [] },
+        embeds: [
+          {
+            title,
+            url: `${origin}/admin`,
+            color: 0xfbc344,
+            fields: fields.filter(([, v]) => v).map(([name, value]) => ({ name, value: value.slice(0, 1000) })),
+            timestamp: new Date().toISOString(),
+          },
+        ],
+      }),
+    });
+  } catch (err) {
+    console.error('notify failed', err);
+  }
+}
+
 function readWork(body: any) {
   const url = str(body.url, 500);
   const titleEn = str(body.titleEn, 200);
@@ -132,8 +176,8 @@ function readCredit(body: any) {
   };
 }
 
-async function handle(req: Request, env: Env): Promise<Response> {
-  const { pathname } = new URL(req.url);
+async function handle(req: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+  const { pathname, origin } = new URL(req.url);
   const [, , resource, id] = pathname.split('/'); // /api/<resource>/<id>
   const method = req.method;
   const body: any = method === 'POST' || method === 'PUT' || method === 'PATCH' ? await req.json().catch(() => ({})) : {};
@@ -179,7 +223,43 @@ async function handle(req: Request, env: Env): Promise<Response> {
     )
       .bind(newId('inq'), name, contact, str(body.projectType, 80), str(body.budget, 40), str(body.details, 3000), Date.now())
       .run();
+    ctx.waitUntil(
+      notify(env, origin, `New request from ${name}`, [
+        ['Contact', contact],
+        ['Project', str(body.projectType, 80)],
+        ['Budget', str(body.budget, 40)],
+        ['Details', str(body.details, 3000)],
+      ]),
+    );
     return json({ ok: true }, 201);
+  }
+  if (resource === 'drawings' && method === 'POST' && !id) {
+    const m = typeof body.image === 'string' ? body.image.match(/^data:image\/png;base64,([A-Za-z0-9+/=]+)$/) : null;
+    if (!m || m[1].length > MAX_DRAWING_CHARS) return fail('The drawing must be a PNG under the size limit.');
+    await ensureDrawings(env);
+    const now = Date.now();
+    const count = await env.DB.prepare('SELECT COUNT(*) AS total, SUM(created_at > ?) AS recent FROM drawings')
+      .bind(now - 10 * 60 * 1000)
+      .first<{ total: number; recent: number | null }>();
+    if ((count?.total ?? 0) >= MAX_DRAWINGS || (count?.recent ?? 0) >= MAX_DRAWINGS_PER_10_MIN) {
+      return fail('Too many drawings right now. Try again later.', 429);
+    }
+    const name = str(body.name, 40);
+    await env.DB.prepare('INSERT INTO drawings (id, name, image, created_at) VALUES (?, ?, ?, ?)')
+      .bind(`d-${crypto.randomUUID()}`, name, m[1], now)
+      .run();
+    ctx.waitUntil(notify(env, origin, `New drawing from ${name || 'a visitor'}`, []));
+    return json({ ok: true }, 201);
+  }
+  // Drawing ids are random, so the image itself needs no sign-in; the list of ids does.
+  if (resource === 'drawing' && method === 'GET' && id) {
+    await ensureDrawings(env);
+    const row = await env.DB.prepare('SELECT image FROM drawings WHERE id = ?').bind(id).first<{ image: string }>();
+    if (!row) return fail('No drawing.', 404);
+    const bytes = Uint8Array.from(atob(row.image), (ch) => ch.charCodeAt(0));
+    return new Response(bytes, {
+      headers: { 'content-type': 'image/png', 'cache-control': 'private, max-age=86400', 'x-content-type-options': 'nosniff' },
+    });
   }
   if (resource === 'login' && method === 'POST') {
     if (!env.ADMIN_PASSWORD) return fail('ADMIN_PASSWORD is not set on the worker.', 500);
@@ -263,13 +343,25 @@ async function handle(req: Request, env: Env): Promise<Response> {
     }
   }
 
+  if (resource === 'drawings') {
+    await ensureDrawings(env);
+    if (method === 'GET') {
+      const { results } = await env.DB.prepare('SELECT id, name, created_at FROM drawings ORDER BY created_at DESC').all();
+      return json(results.map(toDrawing));
+    }
+    if (method === 'DELETE' && id) {
+      await env.DB.prepare('DELETE FROM drawings WHERE id = ?').bind(id).run();
+      return json({ ok: true });
+    }
+  }
+
   return fail('Not found.', 404);
 }
 
 export default {
-  async fetch(req: Request, env: Env) {
+  async fetch(req: Request, env: Env, ctx: ExecutionContext) {
     try {
-      return await handle(req, env);
+      return await handle(req, env, ctx);
     } catch (err) {
       console.error(err);
       return fail('Server error.', 500);

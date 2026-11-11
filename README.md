@@ -15,6 +15,13 @@ npm run db:migrate                      # creates the tables and loads the exist
 npx wrangler secret put ADMIN_PASSWORD  # the password for /admin
 ```
 
+To get a Discord message for every new booking request and drawing, create a webhook in a private
+channel (channel settings, Integrations, Webhooks) and store its URL:
+
+```bash
+npx wrangler secret put DISCORD_WEBHOOK_URL
+```
+
 After that, pushing to GitHub redeploys through Workers Builds (build command `npm run build`,
 deploy command `npx wrangler deploy`), or run `npm run deploy` by hand.
 

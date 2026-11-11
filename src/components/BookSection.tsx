@@ -40,7 +40,7 @@ export function BookSection({ lang }: { lang: Lang }) {
     <section id="contact" className="mx-auto max-w-7xl px-5 py-24 sm:px-8">
       <div className="grid gap-x-14 gap-y-16 lg:grid-cols-[1fr_1.1fr]">
         <div>
-          <h2 className="display text-[clamp(3rem,7.5vw,5.75rem)]">
+          <h2 className="display sticker-type text-[clamp(2.8rem,7vw,5.5rem)]">
             {s.contactTitle.map((line) => (
               <span key={line} className="block">
                 {line}
